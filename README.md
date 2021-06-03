@@ -115,7 +115,7 @@ Your app is ready to be deployed.
 
 ## Injecting into WEKO3 module
 
-### `Change file name`
+### Change file name
 
 After process build, you can't found build results in `app-module-name/build/static/` contained `css` and `js` folders. 
 
@@ -132,9 +132,9 @@ Change that file's name following these rule:
     main.*.chunk.js     --> app-module-name.main.chunk.js
     runtime-main.*.js   --> app-module-name.runtime-main.js
   ```
-### `Move built file into WEKO3 module`
+### Move built file into WEKO3 module
 
-Copy files above into corresponding folder in `WEKO3`'s source:
+Copy files above into corresponding folder in WEKO3's source:
 
 ```
 module
