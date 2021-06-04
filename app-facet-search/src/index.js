@@ -1,10 +1,10 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import FacetSearch from "./FacetSearch";
+import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App';
 
 ReactDOM.render(
   <React.StrictMode>
-    <FacetSearch />
+    <App />
   </React.StrictMode>,
   document.getElementById("app-facet-search")
 );
