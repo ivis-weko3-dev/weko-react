@@ -27,7 +27,7 @@ class FacetSearch extends React.Component {
 
   getTitle() {
     let titleLst = {};
-    fetch("/facet-search/get-title", {method: "POST"})
+    fetch("/facet-search/get-title", { method: "POST" })
       .then((r) => r.json())
       .then((response) => {
         if (response.status) {
@@ -83,7 +83,25 @@ class FacetSearch extends React.Component {
         hasBuckets = val.hasOwnProperty("buckets") || hasBuckets;
         if (hasBuckets) {
           list_facet[name] = val[name] ? val[name] : val;
+          //START:temporary fix for JDCat
+          if (name != "Temporal" && name != "Data Language") {
+            let e = document.getElementById('lang-code');
+            let l = e.options[e.selectedIndex].value;
+            let tmp = list_facet[name];
+
+            for (let i = 0; i < tmp.buckets.length; i++) {
+              let a = tmp.buckets[i];
+
+              if ((l == "en") && ((a.key).charCodeAt(0) > 256 || (a.key).charCodeAt(a.key.length - 1) > 256)) {
+                delete list_facet[name].buckets[i];
+              } else if ((l != "en") && ((a.key).charCodeAt(0) < 256 && (a.key).charCodeAt(a.key.length - 1) < 256)) {
+                delete list_facet[name].buckets[i];
+              }
+            }
+          }
+          //END:temporary fix for JDCat
         }
+
       });
     }
     this.setState({ list_facet: list_facet });

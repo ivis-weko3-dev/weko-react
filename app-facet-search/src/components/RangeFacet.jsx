@@ -6,7 +6,10 @@ import RangeSelect from "./RangeSelect";
 import RangeSlider from "./RangeSlider";
 
 function check_temp(name) {
-  return name === "Temporal";
+  // return name === "Temporal";
+  //START:temporary fix for JDCat
+  return false;
+  //END:temporary fix for JDCat
 }
 
 function RangeFacet({ item, nameshow, name, key, labels }) {
