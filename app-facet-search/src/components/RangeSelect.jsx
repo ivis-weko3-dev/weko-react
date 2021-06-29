@@ -53,9 +53,12 @@ function RangeSelect({ value, name, labels }) {
           defaultValue={options_default}
           isMulti
           name="Facet_Search"
+          ontrolShouldRenderValue={false} 
           onChange={(_selectedOption) => {
             handleChange(_selectedOption);
           }}
+          backspaceRemovesValue={false}
+          isClearable={false}
           options={options}
           className="basic-multi-select"
           classNamePrefix="select"

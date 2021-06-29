@@ -1,0 +1,4 @@
+app-facet-search/build/
+app-facet-search/node_modules/
+app-facet-search/package-lock.json
+
