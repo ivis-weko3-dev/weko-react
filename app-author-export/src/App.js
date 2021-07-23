@@ -75,8 +75,7 @@ class AuthorExport extends React.Component {
   }
 
   onExport = async () => {
-    this.setState({ isExporting: true });
-    const check = await this.checkExportStatus();
+    const check = await this.checkExportStatus(false, true);
     if (!check) {
       return;
     }
@@ -108,11 +107,11 @@ class AuthorExport extends React.Component {
     }
   }
 
-  checkExportStatus = async (repeat = false) => {
-    this.setState({ isChecking: true, errorMsg: '' });
+  checkExportStatus = async (repeat = false, isCheckBeforeExport = false) => {
+    this.setState({ isChecking: true });
     return await new Promise(resolve => {
       const intervalCheckStatus = setInterval(async () => {
-        let result = {};
+        let result = { errorMsg: '' };
         try {
           const { taskId } = this.state;
           const response = await fetch(bridge_params.entrypoints.check_status, { method: "GET" });
@@ -142,6 +141,10 @@ class AuthorExport extends React.Component {
 
         if (result.errorMsg) {
           result.isExporting = false;
+        }
+
+        if (isCheckBeforeExport) {
+          this.setState({ isExporting: true });
         }
 
         if (!repeat || result.errorMsg) {
