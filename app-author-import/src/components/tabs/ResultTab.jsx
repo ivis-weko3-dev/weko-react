@@ -10,7 +10,7 @@ import { prepareSuccessMsg, JSONToCSVConvertor } from "../../Common";
 class ResultTab extends React.Component {
     static contextType = AppContext;
 
-    prepareDisplayStatus = (status, importType) => {
+    prepareDisplayStatus = (status, importType, error_id) => {
         let msg = '';
         switch (status) {
             case "PENDING":
@@ -20,7 +20,11 @@ class ResultTab extends React.Component {
                 msg = prepareSuccessMsg(importType);
                 break;
             case "FAILURE":
-                msg = bridge_params.error_label + ': ' + bridge_params.import_fail_error;
+                msg = bridge_params.error_label + ': '
+                    + (error_id === 'delete_author_link' ?
+                        bridge_params.delete_author_link_error :
+                        bridge_params.import_fail_error
+                    );
                 break;
             default:
                 break;
@@ -37,7 +41,7 @@ class ResultTab extends React.Component {
                 [bridge_params.end_date_label]: task.end_date ? task.end_date : '',
                 [bridge_params.weko_id_label]: task.record_id || '',
                 [bridge_params.name_label]: task.fullname.join('\n'),
-                [bridge_params.status_label]: this.prepareDisplayStatus(task.status, task.type)
+                [bridge_params.status_label]: this.prepareDisplayStatus(task.status, task.type, task.error_id)
             }
         })
         if (data) {
@@ -61,7 +65,7 @@ class ResultTab extends React.Component {
                         }
                     </td>
                     <td>
-                        {this.prepareDisplayStatus(task.status, task.type)}
+                        {this.prepareDisplayStatus(task.status, task.type, task.error_id)}
                     </td>
                 </tr>
             )

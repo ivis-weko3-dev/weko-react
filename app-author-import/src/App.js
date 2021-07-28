@@ -159,6 +159,7 @@ class AuthorImport extends React.Component {
                 current_task.status = taskInfo.status;
                 current_task.start_date = taskInfo.start_date;
                 current_task.end_date = taskInfo.end_date;
+                current_task.error_id = taskInfo.error_id;
 
                 if (taskInfo.status === 'PENDING') {
                   isDone = false;

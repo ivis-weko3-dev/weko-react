@@ -44,5 +44,6 @@ export const celery_not_run = document.getElementById("celery_not_run").value;
 export const not_available_error = document.getElementById("not_available_error").value;
 export const not_available_error_another = document.getElementById("not_available_error_another").value;
 export const import_fail_error = document.getElementById("import_fail_error").value;
+export const delete_author_link_error = document.getElementById("delete_author_link").value;
 
 export const entrypoints = JSON.parse(document.getElementById("import_authors_entrypoints").value);
