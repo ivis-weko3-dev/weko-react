@@ -24,6 +24,7 @@ function RangeSelect({ value, name, labels }) {
         encodeURIComponent(name) + "=" + encodeURIComponent(subitem.value);
       search += "&" + pattern;
     });
+    search = search.replace("q=0", "q=");
     window.location.href = "/search" + search;
   }
 
