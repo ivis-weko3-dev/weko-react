@@ -42,26 +42,55 @@ class FacetSearch extends React.Component {
   }
 
   get_facet_search_list() {
-    let search = window.location.search;
+    let search = new URLSearchParams(window.location.search);
     let url = "/api/records/";
     let params = this.getUrlVars();
     if (params.search_type && String(params.search_type) === "2") {
       url = "/api/index/";
     }
-    fetch(url + search)
+    fetch(url + '?' + search.toString())
       .then((r) => r.json())
       .then((res) => {
         if (params.search_type && String(params.search_type) === "2") {
           // Index faceted search
-          const data =
-            res &&
-              res.aggregations &&
-              res.aggregations.path &&
-              res.aggregations.path.buckets &&
-              res.aggregations.path.buckets[0]
-              ? res.aggregations.path.buckets[0]
-              : {};
-          this.convertData(data && data[0] ? data[0] : {});
+          const buckets = res && res.aggregations && res.aggregations.path &&
+          res.aggregations.path.buckets && res.aggregations.path.buckets[0]
+              ? res.aggregations.path.buckets[0] : {};
+          // Statistic items of facets for api /api/index/...
+          let aggregations = {};
+          for (let i = 0; i < buckets.length; i++) {
+            if (i == 0) {
+              Object.keys(buckets[0]).map(function (key, ind) {
+                if (typeof (buckets[0][key]) == 'object') {
+                  aggregations[key] = {'buckets': []};
+                }
+              });
+            }
+            Object.keys(buckets[i]).map(function (key, ind) {
+              if (typeof (buckets[i][key]) == 'object' && aggregations[key]) {
+                let aggregations_buckets = aggregations[key]['buckets'];
+                let cur_buckets = buckets[i][key][key] ? buckets[i][key][key]['buckets'] : buckets[i][key]['buckets'];
+                cur_buckets = cur_buckets ? cur_buckets : [];
+                for (let j = 0; j < cur_buckets.length; j++) {
+                  let flag = false;
+                  for (let k = 0; k < aggregations_buckets.length; k++) {
+                    if (aggregations_buckets[k]['key'] == cur_buckets[j]['key']) {
+                      aggregations_buckets[k]['doc_count'] = aggregations_buckets[k]['doc_count'] + cur_buckets[j]['doc_count'];
+                      flag = !flag;
+                      break;
+                    }
+                  }
+                  if (!flag) {
+                    aggregations_buckets.push({
+                      'key': cur_buckets[j]['key'],
+                      'doc_count': cur_buckets[j]['doc_count']
+                    });
+                  }
+                }
+              }
+            });
+          }
+          this.convertData(aggregations);
         } else {
           // default faceted search
           this.convertData(res && res.aggregations ? res.aggregations : {});
@@ -83,6 +112,7 @@ class FacetSearch extends React.Component {
     const {list_order} = this.state;
     if (data) {
       Object.keys(list_order).map(function (order, key_order) {
+        list_facet[list_order[order]] = {'buckets': []};
         Object.keys(data).map(function (name, k) {
           if (list_order[order] == name) {
             let val = data[name][name] ? data[name][name] : data[name];
