@@ -25,8 +25,7 @@ function RangeSelect({ values, name, labels }) {
       search += "&" + pattern;
     });
     search = search.replace("q=0", "q=");
-    search = search.replace("search_type=2", "search_type=0");
-    search = search + '&is_facet_search=true';
+    search += search.indexOf('is_facet_search=') == -1 ? '&is_facet_search=true' : '';
     window.location.href = "/search" + search;
   }
 
