@@ -84,7 +84,7 @@ class FacetSearch extends React.Component {
         if (hasBuckets) {
           list_facet[name] = val[name] ? val[name] : val;
           //START:temporary fix for JDCat
-          if (name != "Temporal" && name != "Data Language") {
+          if (name != "Temporal" && name != "Data Language" && name != "Access") {
             let e = document.getElementById('lang-code');
             let l = e.options[e.selectedIndex].value;
             let tmp = list_facet[name];
@@ -97,6 +97,17 @@ class FacetSearch extends React.Component {
               } else if ((l != "en") && ((a.key).charCodeAt(0) < 256 && (a.key).charCodeAt(a.key.length - 1) < 256)) {
                 delete list_facet[name].buckets[i];
               }
+            }
+          }
+          if (name == "Access"){
+            let tmp = list_facet[name];
+
+            for (let i = 0; i < tmp.buckets.length; i++) {
+              let a = tmp.buckets[i];
+
+              if (((a.key).charCodeAt(0) > 256 || (a.key).charCodeAt(a.key.length - 1) > 256)) {
+                delete list_facet[name].buckets[i];
+              } 
             }
           }
           //END:temporary fix for JDCat

@@ -19,11 +19,13 @@ function RangeSelect({ value, name, labels }) {
     if (searchUrl != "") {
       search = searchUrl;
     }
+    
     params.map(function (subitem, k) {
       const pattern =
         encodeURIComponent(name) + "=" + encodeURIComponent(subitem.value);
       search += "&" + pattern;
     });
+    
     window.location.href = "/search" + search;
   }
 
