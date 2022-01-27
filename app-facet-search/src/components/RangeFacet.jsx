@@ -6,10 +6,7 @@ import RangeSelect from "./RangeSelect";
 import RangeSlider from "./RangeSlider";
 
 function check_temp(name) {
-  // return name === "Temporal";
-  //START:temporary fix for JDCat
-  return false;
-  //END:temporary fix for JDCat
+  return name === "Temporal";
 }
 
 function RangeFacet({ item, nameshow, name, key, labels }) {
@@ -39,7 +36,7 @@ function RangeFacet({ item, nameshow, name, key, labels }) {
           {!check_temp(name) && (
             <RangeSelect value={item.buckets} name={name} labels={labels} />
           )}
-          {check_temp(name) && false && (
+          {check_temp(name) && (
             <RangeSlider value={item.buckets} name={name} labels={labels} />
           )}
         </div>
