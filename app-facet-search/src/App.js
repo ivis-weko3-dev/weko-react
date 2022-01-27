@@ -27,11 +27,11 @@ class FacetSearch extends React.Component {
 
   getTitle() {
     let titleLst = {};
-    fetch("/facet-search/get-title", { method: "POST" })
+    fetch("/facet-search/get-title-and-order", { method: "POST" })
       .then((r) => r.json())
       .then((response) => {
         if (response.status) {
-          titleLst = response.data;
+          titleLst = response.data.titles;
         }
         this.setState({ list_title: titleLst });
       });
