@@ -6,7 +6,15 @@ import React, { useState } from "react";
 function RangeSlider({ value, name, labels }) {
 
   function checkFormat(date) {
-    return true;
+    let pattern = new RegExp(/^(\d{8})|(\d{6})|(\d{4})$/);
+    let match = pattern.exec(date);
+    let result = false;
+    if (match.length > 0) {
+      if (date == match[0]) {
+        result = true;
+      }
+    }
+    return result;
   }
 
   function clearUrlSlide() {
@@ -47,8 +55,6 @@ function RangeSlider({ value, name, labels }) {
     if (pattern) {
       search += pattern;
       window.location.href = "/search" + search;
-    } else {
-      alert("show error message.");
     }
   }
   let marks = {};
@@ -80,8 +86,8 @@ function RangeSlider({ value, name, labels }) {
 
   return (
     <div>
-      <div className="col-sm-11" style={{ paddingBottom: "20px" }}>
-        <Slider.Range min={0} marks={marks} step={distance} onChange={handleSlide} defaultValue={[0, 100]} />
+      <div className="col-sm-11" style={{ paddingBottom: "20px", "white-space": "nowrap" }}>
+        <Slider.Range min={0} marks={marks} step={distance} onChange={handleSlide} defaultValue={[0, 100]}  />
       </div>
       <div className="form-group row">
         <div className="col-sm-5">
