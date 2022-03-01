@@ -5,12 +5,26 @@ import React, { useState } from "react";
 
 function RangeSlider({ value, name, labels }) {
 
+  function checkFormat(date) {
+    let pattern = new RegExp(/^(\d{8})|(\d{6})|(\d{4})$/);
+    let match = pattern.exec(date);
+    let result = false;
+    if (match.length > 0) {
+      if (date == match[0]) {
+        result = true;
+      }
+    }
+    return result;
+  }
+
   function clearUrlSlide() {
     let searchUrl = "";
     if (search.indexOf("&") >= 0) {
       let arrSearch = search.split("&");
+      console.log(arrSearch)
       for (let i = 0; i < arrSearch.length; i++) {
-        if (arrSearch[i].indexOf(encodeURIComponent(name) + "=") < 0) {
+        if (arrSearch[i].indexOf(encodeURIComponent("date_range1_from") + "=") < 0 &&
+            arrSearch[i].indexOf(encodeURIComponent("date_range1_to") + "=") < 0) {
           searchUrl += "&" + arrSearch[i];
         }
       }
@@ -23,28 +37,25 @@ function RangeSlider({ value, name, labels }) {
   }
 
   function handleSlide(valuelog) {
-    clearUrlSlide();
-    let arrShowSlide = Object.keys(marks);
-    for (let i = 0; i < arrShowSlide.length; i++) {
-      if ((arrShowSlide[i] >= valuelog[0]) && (arrShowSlide[i] <= valuelog[1])) {
-        const pattern = encodeURIComponent(name) + "=" + encodeURIComponent(marks[arrShowSlide[i]]);
-        search += "&" + pattern;
-      }
-    }
-    window.location.href = "/search" + search;
+    setInputHead(marks[valuelog[0]]);
+    setInputTail(marks[valuelog[1]]);
   }
 
   function handleGo() {
     clearUrlSlide();
-    let valuelog = [parseInt(inputHead), parseInt(inputTail)]
-    let arrShowSlide = Object.values(marks);
-    for (let i = 0; i < arrShowSlide.length; i++) {
-      if ((parseInt(arrShowSlide[i]) >= valuelog[0]) && (parseInt(arrShowSlide[i]) <= valuelog[1])) {
-        const pattern = encodeURIComponent(name) + "=" + encodeURIComponent(arrShowSlide[i]);
-        search += "&" + pattern;
-      }
+    let inputHeadVal = parseInt(inputHead);
+    let inputTailVal = parseInt(inputTail);
+    let pattern = "";
+    if (inputHeadVal && checkFormat(inputHeadVal)) {
+      pattern += "&" + encodeURIComponent("date_range1_from") + "=" + encodeURIComponent(inputHeadVal);
     }
-    window.location.href = "/search" + search;
+    if (inputTailVal && checkFormat(inputTailVal)) {
+      pattern += "&" + encodeURIComponent("date_range1_to") + "=" + encodeURIComponent(inputTailVal);
+    }
+    if (pattern) {
+      search += pattern;
+      window.location.href = "/search" + search;
+    }
   }
   let marks = {};
   let distance;
@@ -64,9 +75,10 @@ function RangeSlider({ value, name, labels }) {
   if (marks_arr.length > 1) {
     // Sort.
     marks_arr.sort();
+	marks_arr =  Array.from(new Set(marks_arr))
     distance = 100 / (marks_arr.length - 1);
     for (point_mark in marks_arr) {
-      marks[point_mark * distance] = marks_arr[point_mark].toString();
+		marks[point_mark * distance] = marks_arr[point_mark].toString();
     }
   }
 
@@ -75,7 +87,7 @@ function RangeSlider({ value, name, labels }) {
 
   return (
     <div>
-      <div className="col-sm-11" style={{ paddingBottom: "20px" }}>
+      <div className="col-sm-11" style={{ paddingBottom: "20px", "white-space": "nowrap" }}>
         <Slider.Range min={0} marks={marks} step={distance} onChange={handleSlide} defaultValue={[0, 100]} />
       </div>
       <div className="form-group row">
@@ -101,5 +113,6 @@ function RangeSlider({ value, name, labels }) {
     </div>
   )
 }
+
 
 export default RangeSlider;
