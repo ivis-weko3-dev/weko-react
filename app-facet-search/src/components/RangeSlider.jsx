@@ -75,9 +75,10 @@ function RangeSlider({ value, name, labels }) {
   if (marks_arr.length > 1) {
     // Sort.
     marks_arr.sort();
+	marks_arr =  Array.from(new Set(marks_arr))
     distance = 100 / (marks_arr.length - 1);
     for (point_mark in marks_arr) {
-      marks[point_mark * distance] = marks_arr[point_mark].toString();
+		marks[point_mark * distance] = marks_arr[point_mark].toString();
     }
   }
 
@@ -87,7 +88,7 @@ function RangeSlider({ value, name, labels }) {
   return (
     <div>
       <div className="col-sm-11" style={{ paddingBottom: "20px", "white-space": "nowrap" }}>
-        <Slider.Range min={0} marks={marks} step={distance} onChange={handleSlide} defaultValue={[0, 100]}  />
+        <Slider.Range min={0} marks={marks} step={distance} onChange={handleSlide} defaultValue={[0, 100]} />
       </div>
       <div className="form-group row">
         <div className="col-sm-5">

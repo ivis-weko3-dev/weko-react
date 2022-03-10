@@ -6,7 +6,7 @@ import RangeSelect from "./RangeSelect";
 import RangeSlider from "./RangeSlider";
 
 function check_temp(name) {
-  return name === "Temporal";
+  return name === "Time Period(s)";
 }
 
 function RangeFacet({ item, nameshow, name, key, labels }) {
@@ -34,7 +34,7 @@ function RangeFacet({ item, nameshow, name, key, labels }) {
       <Collapse isOpen={isOpen}>
         <div className="panel-body index-body">
           {!check_temp(name) && (
-            <RangeSelect value={item.buckets} name={name} labels={labels} />
+            <RangeSelect values={item.buckets} name={name} labels={labels} />
           )}
           {check_temp(name) && (
             <RangeSlider value={item.buckets} name={name} labels={labels} />
