@@ -96,7 +96,7 @@ class SelectTab extends React.Component {
                                         type="file"
                                         className="hide"
                                         ref={input => this.inputFileElement = input}
-                                        accept=".tsv"
+                                        accept=".tsv,.csv"
                                         onChange={this.onChangeFile} />
                                 </div>
                                 <div className="block-placeholder">
