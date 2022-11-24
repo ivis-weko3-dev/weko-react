@@ -116,14 +116,14 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
   const ModalCheckboxList = ({ values, name, modalId }) => {
     return (
       <div key={modalId} className="chbox-mdl" id={modalId}>
-        <a href="#!" className="overlay" onClick={closeModal}></a>
+        <a href="#!" className="overlay" onClick={closeModal} modalId={modalId}></a>
         <div className="window">
           <div className="content">
             <div className="list">
               <CheckBoxList values={values} name={name} isModal={true} />
             </div>
             <div className="footer">
-              <a href="#!" onClick={closeModal}>{labels['cancel']}</a>
+              <a href="#!" onClick={closeModal} modalId={modalId}>{labels['cancel']}</a>
               <button type="button" className="btn btn-primary" onClick={handleModalListChange}>{labels['search']}</button>
             </div>
           </div>
@@ -132,14 +132,14 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
     )
   };
 
-  // Show/Hide Modal
-  var status = 'Hide';
-
   /**
    * Called to close the modal.
    */
-  function closeModal(){
-    status = 'Hide';
+  function closeModal(e){
+    if(e == null){
+      return;
+    }
+    document.getElementById(e.target.getAttribute('modalId')).classList.remove("is-active");
   }
 
   /**
@@ -147,8 +147,13 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
    * Reconfigure it to select only the checkboxes that have been narrowed down 
    * from the parameters of the URL at the time before displaying.
    */
-  function openModal(){
-    status = 'Show';
+  function openModal(e){
+
+    if(e == null){
+        console.log("event == null" );
+        return;
+    }
+    document.getElementById(e.target.getAttribute('modalId')).classList.add("is-active");
     document.querySelectorAll('.chbox-mdl input').forEach(el => {
       el.checked = params.indexOf(name + "=" + el.value)!= -1;
     });
@@ -220,23 +225,6 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
     params[i] = decodeURIComponent(params[i]);
   }
   let modalId = "id_" + name + "_checkbox_modal";
-  var timeoutId ;
-
-  /*
-   * Responsive measures.
-   * Addresses the problem of hiding the modal at the timing when the style is changed 
-   * for mobile when the Window size is reduced. When resizing, prompt to redisplay if in display state.
-   */
-  window.addEventListener("resize", function() {
-    if(status==='Hide'){
-      return;
-    }
-	  if ( timeoutId ) return ;
-      timeoutId = setTimeout( function () {
-		  timeoutId = 0 ;
-      window.location.hash='#' + modalId;
-	  }, 100 ) ;
-  });
 
   let dp = displayNumber == null ? 5 : displayNumber;
   return (
@@ -244,7 +232,7 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
       <div className="chbox-container">
         <CheckBoxList values={values} name={name} isModal={false} displayNumber={dp} onChange={handleListChange}/>
         {values.length > dp &&
-          <a href={'#' + modalId} onClick={openModal}>. . . See More</a>
+          <a href={'#' + modalId} onClick={openModal} modalId={modalId} >. . . See More</a>
         }
         <ModalCheckboxList values={values} name={name} modalId={modalId} displayNumber={displayNumber}/>
       </div>

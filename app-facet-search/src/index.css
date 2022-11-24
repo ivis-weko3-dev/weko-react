@@ -18,15 +18,12 @@
   left: 0;
   padding: 40px 10px;
   text-align: center;
-}
-
-.chbox-mdl:not(:target) {
   opacity: 0;
   visibility: hidden;
   transition: opacity .3s, visibility .3s;
 }
 
-.chbox-mdl:target {
+.chbox-mdl.is-active {
   opacity: 1;
   visibility: visible;
   transition: opacity .4s, visibility .4s;
@@ -87,4 +84,13 @@
 
 .chbox-mdl .window .content .footer button {
   margin-left: 50px;
+}
+
+.rc-slider-mark-text {
+  display: none !important;
+}
+
+.rc-slider-dot {
+  border: initial !important;
+  background-color: initial !important;
 }
