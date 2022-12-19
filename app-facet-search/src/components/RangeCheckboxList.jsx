@@ -37,6 +37,10 @@ import React from "react";
  */
 function RangeCheckboxList({ values, name, labels, displayNumber }) {
 
+  //If there is a space in the id attribute, it cannot be searched by ID, so escape it.
+  let facet_item_id = "id_" + name + "_chkbox";
+  let facet_item_id_for_search = facet_item_id.replace(' ', '\\ ');
+
   /**
    * Returns the DOM representing the checkbox.
    * 
@@ -154,7 +158,7 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
         return;
     }
     document.getElementById(e.target.getAttribute('modalId')).classList.add("is-active");
-    document.querySelectorAll('.chbox-mdl input').forEach(el => {
+    document.querySelector('#' + facet_item_id_for_search).querySelectorAll('.chbox-mdl input').forEach(el => {
       el.checked = params.indexOf(name + "=" + el.value)!= -1;
     });
   }
@@ -165,7 +169,7 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
    */
   function handleListChange(e) {
     const targets = [];
-    document.querySelectorAll('.chbox-mdl input').forEach(el => {
+    document.querySelector('#' + facet_item_id_for_search).querySelectorAll('.chbox-mdl input').forEach(el => {
       if((el.checked && e.target.value !== el.value) || (e.target.checked && e.target.value === el.value)){
         targets.push({label: name, value: el.value});
       }
@@ -179,7 +183,7 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
    */
   function handleModalListChange(e) {
     const targets = [];
-    document.querySelectorAll('.chbox-mdl input').forEach(el => {
+    document.querySelector('#' + facet_item_id_for_search).querySelectorAll('.chbox-mdl input').forEach(el => {
       if(el.checked){
         targets.push({label: name, value: el.value});
       }
@@ -228,7 +232,7 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
 
   let dp = displayNumber == null ? 5 : displayNumber;
   return (
-    <div>
+    <div id={facet_item_id}>
       <div className="chbox-container">
         <CheckBoxList values={values} name={name} isModal={false} displayNumber={dp} onChange={handleListChange}/>
         {values.length > dp &&
