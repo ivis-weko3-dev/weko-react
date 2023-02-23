@@ -4,17 +4,56 @@ import 'rc-tooltip/assets/bootstrap.css';
 import React, { useState } from "react";
 
 function RangeSlider({ value, name, labels }) {
+  //If there is a space in the id attribute, it cannot be searched by ID, so escape it.
+  let facet_item_id = "id_" + name + "_slider";
+  let facet_item_id_for_search = CSS.escape(facet_item_id);
 
-  function checkFormat(date) {
-    let pattern = new RegExp(/^(\d{8})|(\d{6})|(\d{4})$/);
-    let match = pattern.exec(date);
-    let result = false;
-    if (match.length > 0) {
-      if (date == match[0]) {
-        result = true;
+  function validateInputIsOk() {
+    let headComp = document.getElementById(facet_item_id + "_input_head");
+    let tailComp = document.getElementById(facet_item_id + "_input_tail");
+    let msgComp = document.getElementById(facet_item_id + "_msg");
+
+    // 必須チェック
+    if(!headComp.value || !tailComp.value){
+      if(!headComp.value) {
+        setHeadStyle('form-control range-slider-error');
       }
+      if(!tailComp.value) {
+        setTailStyle('form-control range-slider-error');
+      }
+      setErrMsg('Set the value.');
+      return false;
     }
-    return result;
+    // 数値入力チェック
+    //TODO 型に応じた対応
+    let pattern = new RegExp(/^([1-9]\d*|0)$/);
+    let headResult = pattern.exec(inputHead);
+    let tailResult = pattern.exec(inputTail);
+
+    if(headResult == null || headResult[0] != inputHead ||
+        tailResult == null || tailResult[0] != inputTail) {
+      if(headResult == null || headResult[0] != inputHead) {
+        setHeadStyle('form-control range-slider-error');
+      }
+      if(tailResult == null || tailResult[0] != inputTail) {
+        setTailStyle('form-control range-slider-error');
+      }
+      setErrMsg('Set the correct value.');
+      return false;
+    }
+
+    // 相関チェック
+    if(parseFloat(inputHead) > parseFloat(inputTail)) {
+      setHeadStyle('form-control range-slider-error');
+      setTailStyle('form-control range-slider-error');
+      setErrMsg('The range from should be less than or equal to the range to.');
+      return false;
+    }
+    //エラー情報のクリア
+    setHeadStyle('form-control');
+    setTailStyle('form-control');
+    setErrMsg('');
+    return true;
   }
 
   function clearUrlSlide() {
@@ -37,68 +76,90 @@ function RangeSlider({ value, name, labels }) {
   }
 
   function handleSlide(valuelog) {
-    setInputHead(marks[valuelog[0]]);
-    setInputTail(marks[valuelog[1]]);
+    setSliderValues([valuelog[0],valuelog[1]]);
+    if(inputHead != valuelog[0]) {
+      setInputHead(Math.round(valuelog[0]));
+    }
+    if(inputTail != valuelog[1]) {
+      setInputTail(Math.round(valuelog[1]));
+    }
   }
 
   function handleGo() {
     clearUrlSlide();
-    let inputHeadVal = parseInt(inputHead);
-    let inputTailVal = parseInt(inputTail);
+    //TODO チェックロジック
+    if(!validateInputIsOk()) {
+      return;
+    }
     let pattern = "";
-    if (inputHeadVal && checkFormat(inputHeadVal)) {
-      pattern += "&" + encodeURIComponent("date_range1_from") + "=" + encodeURIComponent(inputHeadVal);
-    }
-    if (inputTailVal && checkFormat(inputTailVal)) {
-      pattern += "&" + encodeURIComponent("date_range1_to") + "=" + encodeURIComponent(inputTailVal);
-    }
-    if (pattern) {
-      search += pattern;
+    pattern += "&" + encodeURIComponent("date_range1_from") + "=" + encodeURIComponent(inputHead);
+    pattern += "&" + encodeURIComponent("date_range1_to") + "=" + encodeURIComponent(inputTail);
+    search += pattern;
+
+    if(window.invenioSearchFunctions) {
+      window.history.pushState(null,document.title,"/search" + search);
+      window.invenioSearchFunctions.reSearchInvenio();
+    }else {
       window.location.href = "/search" + search;
     }
   }
-  let marks = {};
-  let distance;
-  // Put to Matks
-  let point_mark;
-  let marks_arr = [];
+
   let search = window.location.search.replace(",", "%2C") || "?";
-  if (value) {
+
+  // URLパラメータより最大値と最小値を取得
+  let params = (new URL(document.location)).searchParams;
+  // TODO 汎用化
+  let minValue = params.get('date_range1_from') == null ? null : parseInt(params.get('date_range1_from'));
+  let maxValue = params.get('date_range1_to') == null ? null : parseInt(params.get('date_range1_to'));
+  if (value && minValue == null && maxValue == null) {
     value.map(function (subitem, k) {
       let parse_Int;
       if (subitem.key.length > 0) {
         parse_Int = parseInt(subitem.key);
-        marks_arr.push(parse_Int);
+        if(minValue == null || minValue > parse_Int) {
+          minValue = parse_Int;
+        }
+        if(maxValue == null || maxValue < parse_Int) {
+          maxValue = parse_Int;
+        }
       }
     });
   }
-  if (marks_arr.length > 1) {
-    // Sort.
-    marks_arr.sort();
-	marks_arr =  Array.from(new Set(marks_arr))
-    distance = 100 / (marks_arr.length - 1);
-    for (point_mark in marks_arr) {
-		marks[point_mark * distance] = marks_arr[point_mark].toString();
-    }
-  }
+  let step = (maxValue - minValue)/100;
 
-  const [inputHead, setInputHead] = useState(marks_arr[0]);
-  const [inputTail, setInputTail] = useState(marks_arr[point_mark]);
+  console.log("====== SLIEDER DEBUG   START ======");
+  const [sliderValues, setSliderValues] = useState([minValue,maxValue]);
+  const [inputHead, setInputHead] = useState(minValue);
+  const [inputTail, setInputTail] = useState(maxValue);
+  const [headStyle, setHeadStyle] = useState('form-control');
+  const [tailStyle, setTailStyle] = useState('form-control');
+  const [errMsg, setErrMsg] = useState('');
+
+  const clearSliderValue = () => {
+    //再呼び出しされた場合の情報再設定
+    setSliderValues([minValue, maxValue]);
+    setInputHead(minValue);
+    setInputTail(maxValue);
+    setHeadStyle('form-control');
+    setTailStyle('form-control');
+    setErrMsg('');
+  }
+  window.facetSearchFunctions[name + '_clearSliderValue'] = clearSliderValue;
 
   return (
-    <div>
+    <div id={facet_item_id}>
       <div className="col-sm-11" style={{ paddingBottom: "20px", "white-space": "nowrap" }}>
-        <Slider.Range min={0} marks={marks} step={distance} onChange={handleSlide} defaultValue={[0, 100]} />
+        <Slider.Range min={minValue} max={maxValue} step={step} onChange={handleSlide} defaultValue={sliderValues} value={sliderValues} />
       </div>
       <div className="form-group row">
         <div className="col-sm-5">
-          <input type="number" id="input_head" className="form-control"
+          <input type="number" id={facet_item_id + "_input_head"} className={headStyle}
             value={inputHead}
             onChange={e => setInputHead(e.target.value)}
           />
         </div>
         <div className="col-sm-5">
-          <input type="number" id="input_tail" className="form-control"
+          <input type="number" id={facet_item_id + "_input_tail"} className={tailStyle}
             value={inputTail}
             onChange={e => setInputTail(e.target.value)}
           />
@@ -106,10 +167,11 @@ function RangeSlider({ value, name, labels }) {
         <div className="col-sm-2">
           <button type="button" style={{ marginLeft: "3px" }}
             className="btn btn-primary pull-right"
-            onClick={handleGo}> {labels['Goto']}
+            onClick={handleGo}> 検索
           </button>
         </div>
       </div>
+      <div className="range-slider-error-msg" id={facet_item_id + "_msg"}>{errMsg}</div>
     </div>
   )
 }

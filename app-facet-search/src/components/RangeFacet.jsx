@@ -7,6 +7,7 @@ import RangeSlider from "./RangeSlider";
 import RangeCheckboxList from "./RangeCheckboxList";
 
 function RangeFacet({ item, nameshow, name, key, labels, isInitOpen, uiType, displayNumber }) {
+  console.debug("RangeFacet実行");
   const toggle = () => setIsOpen(!isOpen);
   const search = window.location.search.replace(",", "%2C");
   const is_check = search.indexOf(encodeURIComponent(name)) >= 0 ? true : isInitOpen;

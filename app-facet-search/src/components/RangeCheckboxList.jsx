@@ -1,7 +1,7 @@
 import "rc-slider/assets/index.css";
 import "rc-tooltip/assets/bootstrap.css";
-import React from "react";
-
+import React, { useState } from "react";
+//import reSearchFacet from '../App.js';
 
 /**
  * A UI component that displays faceted items as a list of checkboxes.
@@ -36,6 +36,7 @@ import React from "react";
  * @author knowledge labo yamada
  */
 function RangeCheckboxList({ values, name, labels, displayNumber }) {
+  const [listCheckedItems, setListCheckedItems] = useState({});
 
   //If there is a space in the id attribute, it cannot be searched by ID, so escape it.
   let facet_item_id = "id_" + name + "_chkbox";
@@ -53,12 +54,13 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
   const CheckBox = ({ id, value, checked, onChange}) => {
     if(onChange !=null) {
       //for lists
+      listCheckedItems[id] = checked;
       return (
         <input
           id={id}
           className="facet-chbox"
           type="checkbox"
-          checked={checked}
+          checked={listCheckedItems[id]}
           onChange={onChange}
           value={value}
         />
@@ -128,7 +130,7 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
             </div>
             <div className="footer">
               <a href="#!" onClick={closeModal} modalId={modalId}>{labels['cancel']}</a>
-              <button type="button" className="btn btn-primary" onClick={handleModalListChange}>{labels['search']}</button>
+              <button type="button" className="btn btn-primary" onClick={handleModalListChange} modalId={modalId}>{labels['search']}</button>
             </div>
           </div>
         </div>
@@ -174,6 +176,7 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
         targets.push({label: name, value: el.value});
       }
     });
+    setListCheckedItems({...listCheckedItems, [e.target.id]: e.target.checked});
     executeSearch(targets);
   }
   
@@ -186,9 +189,12 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
     document.querySelector('#' + facet_item_id_for_search).querySelectorAll('.chbox-mdl input').forEach(el => {
       if(el.checked){
         targets.push({label: name, value: el.value});
+      }else if(listCheckedItems[el.id]){
+        setListCheckedItems({...listCheckedItems, [e.target.id]: el.checked});
       }
     });
     executeSearch(targets);
+    document.getElementById(e.target.getAttribute('modalId')).classList.remove("is-active");
   }
   
   /**
@@ -213,6 +219,7 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
     if (searchUrl != "") {
       search = searchUrl;
     }
+
     targets.map(function (subitem, k) {
       const pattern =
           encodeURIComponent(name) + "=" + encodeURIComponent(subitem.value);
@@ -220,7 +227,14 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
     });
     search = search.replace("q=0", "q=");
     search += search.indexOf('is_facet_search=') == -1 ? '&is_facet_search=true' : '';
-    window.location.href = "/search" + search;
+    if(window.invenioSearchFunctions) {
+      window.history.pushState(null,document.title,"/search" + search);
+      window.invenioSearchFunctions.reSearchInvenio();
+    }else {
+      window.location.href = "/search" + search;
+    }
+    
+
   }
 
   let search = window.location.search.replace(",", "%2C") || "?";
@@ -236,7 +250,7 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
       <div className="chbox-container">
         <CheckBoxList values={values} name={name} isModal={false} displayNumber={dp} onChange={handleListChange}/>
         {values.length > dp &&
-          <a href={'#' + modalId} onClick={openModal} modalId={modalId} >. . . See More</a>
+          <a onClick={openModal} modalId={modalId} >. . . See More</a>
         }
         <ModalCheckboxList values={values} name={name} modalId={modalId} displayNumber={displayNumber}/>
       </div>

@@ -27,7 +27,13 @@ function RangeSelect({ values, name, labels }) {
     });
     search = search.replace("q=0", "q=");
     search += search.indexOf('is_facet_search=') == -1 ? '&is_facet_search=true' : '';
-    window.location.href = "/search" + search;
+
+    if(window.invenioSearchFunctions) {
+      window.history.pushState(null,document.title,"/search" + search);
+      window.invenioSearchFunctions.reSearchInvenio();
+    }else {
+      window.location.href = "/search" + search;
+    }
   }
 
   let search = window.location.search.replace(",", "%2C") || "?";

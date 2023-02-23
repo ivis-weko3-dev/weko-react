@@ -94,3 +94,11 @@
   border: initial !important;
   background-color: initial !important;
 }
+
+.range-slider-error {
+  background-color: #FFF0F5;
+}
+
+.range-slider-error-msg {
+  color: red;
+}

@@ -12,6 +12,8 @@ for (let i = 0; i < labels.length; i++) {
   LABELS[labels[i].id] = labels[i].value;
 }
 
+let facetSearchComponent;
+
 class FacetSearch extends React.Component {
   constructor(props) {
     super(props);
@@ -27,6 +29,7 @@ class FacetSearch extends React.Component {
     this.getTitleAndOrder = this.getTitleAndOrder.bind(this);
     this.get_facet_search_list = this.get_facet_search_list.bind(this);
     this.convertData = this.convertData.bind(this);
+    facetSearchComponent = this;
   }
 
   getTitleAndOrder() {
@@ -55,6 +58,7 @@ class FacetSearch extends React.Component {
   }
 
   get_facet_search_list() {
+    console.debug("get_facet_search_list実行");
     let search = new URLSearchParams(window.location.search);
     let url = search.get('search_type') == 2 ? "/api/index/" : "/api/records/";
     fetch(url + '?' + search.toString())
@@ -73,6 +77,7 @@ class FacetSearch extends React.Component {
   }
 
   convertData(data) {
+    console.debug("convertData実行");
     let list_facet = {};
     if (data) {
       Object.keys(data).map(function (name, k) {
@@ -119,6 +124,12 @@ class FacetSearch extends React.Component {
       });
     }
     this.setState({list_facet: list_facet});
+    Object.keys(data).map(function (name, k) {
+      if(window.facetSearchFunctions[name + '_clearSliderValue']) {
+        window.facetSearchFunctions[name + '_clearSliderValue']();
+      }
+    });
+
   }
 
   componentDidMount() {
@@ -149,5 +160,22 @@ class FacetSearch extends React.Component {
     );
   }
 }
+
+const useFacetSearch = () => {
+  return facetSearchComponent != null;
+}
+
+const resetFacetData = () => {
+  console.debug("resetFacetData 呼び出されました。");
+  if(facetSearchComponent != null) {
+    console.debug("facetSearchComponent != null → true");
+    facetSearchComponent.get_facet_search_list();
+  }
+}
+
+// windowオブジェクトのグローバル変数用キーに定義した関数を入れる
+window.facetSearchFunctions = {};
+window.facetSearchFunctions.useFacetSearch = useFacetSearch;
+window.facetSearchFunctions.resetFacetData = resetFacetData;
 
 export default FacetSearch;
