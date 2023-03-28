@@ -58,8 +58,9 @@ class FacetSearch extends React.Component {
   }
 
   get_facet_search_list() {
-    console.debug("get_facet_search_list実行");
+
     let search = new URLSearchParams(window.location.search);
+
     let url = search.get('search_type') == 2 ? "/api/index/" : "/api/records/";
     fetch(url + '?' + search.toString())
       .then((r) => r.json())
@@ -77,7 +78,6 @@ class FacetSearch extends React.Component {
   }
 
   convertData(data) {
-    console.debug("convertData実行");
     let list_facet = {};
     if (data) {
       Object.keys(data).map(function (name, k) {
@@ -138,7 +138,7 @@ class FacetSearch extends React.Component {
   }
 
   render() {
-    const { is_enable, list_title, list_facet, list_order, list_uiType, list_isOpen, list_displayNumber } = this.state;
+    const { is_enable, list_title, list_facet, list_order, list_uiType, list_isOpen, list_displayNumber} = this.state;
     return (
       <div>
         {is_enable && (
@@ -165,17 +165,33 @@ const useFacetSearch = () => {
   return facetSearchComponent != null;
 }
 
-const resetFacetData = () => {
-  console.debug("resetFacetData 呼び出されました。");
+const resetFacetData = (data) => {
   if(facetSearchComponent != null) {
-    console.debug("facetSearchComponent != null → true");
-    facetSearchComponent.get_facet_search_list();
+    facetSearchComponent.convertData(data);
   }
 }
 
-// windowオブジェクトのグローバル変数用キーに定義した関数を入れる
+const getFacetSearchCondition = () => {
+  let search = new URLSearchParams(window.location.search);
+  let result = new URLSearchParams();
+  Object.keys(facetSearchComponent.state.list_order).map(function (order, k) {
+    let name = facetSearchComponent.state.list_order[order];
+    if(search.has(name)) {
+      for(var value of search.getAll(name)) {
+        result.append(name, value);
+      }
+    }
+  });
+  console.debug(result);
+  return result;
+}
+
+
+
+// Put the defined function in the key for the global variable of the window object.
 window.facetSearchFunctions = {};
 window.facetSearchFunctions.useFacetSearch = useFacetSearch;
 window.facetSearchFunctions.resetFacetData = resetFacetData;
+window.facetSearchFunctions.getFacetSearchCondition = getFacetSearchCondition;
 
 export default FacetSearch;

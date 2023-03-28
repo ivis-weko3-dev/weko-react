@@ -97,7 +97,7 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
         if (isModal || index < displayNumber) {
           let id = "id_" + name + (isModal ? "_chkbox_mdl_" : "_chkbox_") + index;
           let label = subitem.key + "(" + subitem.doc_count + ")";
-          let checked = params.indexOf(name + "=" + subitem.key)!= -1;
+          let checked = search.get(name) &&  search.getAll(name).includes(subitem.key);
           return (
             <div key={id}>
               <label htmlFor={id} >
@@ -122,14 +122,14 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
   const ModalCheckboxList = ({ values, name, modalId }) => {
     return (
       <div key={modalId} className="chbox-mdl" id={modalId}>
-        <a href="#!" className="overlay" onClick={closeModal} modalId={modalId}></a>
+        <a className="overlay" onClick={closeModal} modalId={modalId}></a>
         <div className="window">
           <div className="content">
             <div className="list">
               <CheckBoxList values={values} name={name} isModal={true} />
             </div>
             <div className="footer">
-              <a href="#!" onClick={closeModal} modalId={modalId}>{labels['cancel']}</a>
+              <a onClick={closeModal} modalId={modalId}>{labels['cancel']}</a>
               <button type="button" className="btn btn-primary" onClick={handleModalListChange} modalId={modalId}>{labels['search']}</button>
             </div>
           </div>
@@ -161,7 +161,8 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
     }
     document.getElementById(e.target.getAttribute('modalId')).classList.add("is-active");
     document.querySelector('#' + facet_item_id_for_search).querySelectorAll('.chbox-mdl input').forEach(el => {
-      el.checked = params.indexOf(name + "=" + el.value)!= -1;
+      //el.checked = params.indexOf(name + "=" + el.value)!= -1;
+      el.checked = search.get(name) &&  search.getAll(name).includes(el.value);
     });
   }
 
@@ -190,7 +191,7 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
       if(el.checked){
         targets.push({label: name, value: el.value});
       }else if(listCheckedItems[el.id]){
-        setListCheckedItems({...listCheckedItems, [e.target.id]: el.checked});
+        setListCheckedItems({...listCheckedItems, [el.id]: el.checked});
       }
     });
     executeSearch(targets);
@@ -204,44 +205,17 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
    * @param {array} targets Parameters to be refined by this facet item.
    */
   function executeSearch(targets) {
-    let searchUrl = "";
-    if (search.indexOf("&") >= 0) {
-      let arrSearch = search.split("&");
-      for (let i = 0; i < arrSearch.length; i++) {
-        //Parameters other than this facet item are used as is.
-        if (arrSearch[i].indexOf(encodeURIComponent(name) + "=") < 0) {
-          searchUrl += "&" + arrSearch[i];
-        }
-      }
-      //Delete "&" in First element
-      searchUrl = searchUrl.substring(1);
-    }
-    if (searchUrl != "") {
-      search = searchUrl;
-    }
+    search.delete(name);
 
     targets.map(function (subitem, k) {
-      const pattern =
-          encodeURIComponent(name) + "=" + encodeURIComponent(subitem.value);
-      search += "&" + pattern;
+      search.append(name, subitem.value);
     });
-    search = search.replace("q=0", "q=");
-    search += search.indexOf('is_facet_search=') == -1 ? '&is_facet_search=true' : '';
-    if(window.invenioSearchFunctions) {
-      window.history.pushState(null,document.title,"/search" + search);
-      window.invenioSearchFunctions.reSearchInvenio();
-    }else {
-      window.location.href = "/search" + search;
-    }
-    
-
+    if(search.get('q') === '0') search.set('q', '');
+    search.set('is_facet_search', 'true');
+    window.invenioSearchFunctions.reSearchInvenio(search);
   }
 
-  let search = window.location.search.replace(",", "%2C") || "?";
-  let params = window.location.search.substring(1).split('&');
-  for (let i = 0; i < params.length; i++) {
-    params[i] = decodeURIComponent(params[i]);
-  }
+  let search = new URLSearchParams(window.location.search);
   let modalId = "id_" + name + "_checkbox_modal";
 
   let dp = displayNumber == null ? 5 : displayNumber;

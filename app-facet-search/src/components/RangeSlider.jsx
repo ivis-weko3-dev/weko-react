@@ -3,15 +3,18 @@ import 'rc-slider/assets/index.css';
 import 'rc-tooltip/assets/bootstrap.css';
 import React, { useState } from "react";
 
-function RangeSlider({ value, name, labels }) {
+function RangeSlider({ value, name, labels}) {
   //If there is a space in the id attribute, it cannot be searched by ID, so escape it.
   let facet_item_id = "id_" + name + "_slider";
-  let facet_item_id_for_search = CSS.escape(facet_item_id);
 
   function validateInputIsOk() {
     let headComp = document.getElementById(facet_item_id + "_input_head");
     let tailComp = document.getElementById(facet_item_id + "_input_tail");
-    let msgComp = document.getElementById(facet_item_id + "_msg");
+
+    //エラー情報のクリア
+    setHeadStyle('form-control');
+    setTailStyle('form-control');
+    setErrMsg('');
 
     // 必須チェック
     if(!headComp.value || !tailComp.value){
@@ -21,7 +24,7 @@ function RangeSlider({ value, name, labels }) {
       if(!tailComp.value) {
         setTailStyle('form-control range-slider-error');
       }
-      setErrMsg('Set the value.');
+      setErrMsg(labels['facetSliderRequiredValidation']);
       return false;
     }
     // 数値入力チェック
@@ -38,7 +41,7 @@ function RangeSlider({ value, name, labels }) {
       if(tailResult == null || tailResult[0] != inputTail) {
         setTailStyle('form-control range-slider-error');
       }
-      setErrMsg('Set the correct value.');
+      setErrMsg(labels['facetSliderValueValidation']);
       return false;
     }
 
@@ -46,7 +49,7 @@ function RangeSlider({ value, name, labels }) {
     if(parseFloat(inputHead) > parseFloat(inputTail)) {
       setHeadStyle('form-control range-slider-error');
       setTailStyle('form-control range-slider-error');
-      setErrMsg('The range from should be less than or equal to the range to.');
+      setErrMsg(labels['facetSliderCorrelationValidation']);
       return false;
     }
     //エラー情報のクリア
@@ -54,25 +57,6 @@ function RangeSlider({ value, name, labels }) {
     setTailStyle('form-control');
     setErrMsg('');
     return true;
-  }
-
-  function clearUrlSlide() {
-    let searchUrl = "";
-    if (search.indexOf("&") >= 0) {
-      let arrSearch = search.split("&");
-      console.log(arrSearch)
-      for (let i = 0; i < arrSearch.length; i++) {
-        if (arrSearch[i].indexOf(encodeURIComponent("date_range1_from") + "=") < 0 &&
-            arrSearch[i].indexOf(encodeURIComponent("date_range1_to") + "=") < 0) {
-          searchUrl += "&" + arrSearch[i];
-        }
-      }
-      //Delete "&" in First element
-      searchUrl = searchUrl.substring(1);
-    }
-    if (searchUrl != "") {
-      search = searchUrl;
-    }
   }
 
   function handleSlide(valuelog) {
@@ -86,32 +70,27 @@ function RangeSlider({ value, name, labels }) {
   }
 
   function handleGo() {
-    clearUrlSlide();
     //TODO チェックロジック
     if(!validateInputIsOk()) {
       return;
     }
-    let pattern = "";
-    pattern += "&" + encodeURIComponent("date_range1_from") + "=" + encodeURIComponent(inputHead);
-    pattern += "&" + encodeURIComponent("date_range1_to") + "=" + encodeURIComponent(inputTail);
-    search += pattern;
+    search.set(name, inputHead + '--' + inputTail);
 
-    if(window.invenioSearchFunctions) {
-      window.history.pushState(null,document.title,"/search" + search);
-      window.invenioSearchFunctions.reSearchInvenio();
-    }else {
-      window.location.href = "/search" + search;
-    }
+    if(search.get('q') === '0') search.set('q', '');
+    search.set('is_facet_search', 'true');
+    window.invenioSearchFunctions.reSearchInvenio(search);
   }
 
-  let search = window.location.search.replace(",", "%2C") || "?";
+  let search = new URLSearchParams(window.location.search);
 
-  // URLパラメータより最大値と最小値を取得
-  let params = (new URL(document.location)).searchParams;
   // TODO 汎用化
-  let minValue = params.get('date_range1_from') == null ? null : parseInt(params.get('date_range1_from'));
-  let maxValue = params.get('date_range1_to') == null ? null : parseInt(params.get('date_range1_to'));
-  if (value && minValue == null && maxValue == null) {
+  let minValue = null;
+  let maxValue = null;
+  if(search.get(name) != null) {
+    const paramValues = search.get(name).split('--');
+    minValue = parseInt(paramValues[0]);
+    maxValue = parseInt(paramValues[1]);
+  } else if(value) {
     value.map(function (subitem, k) {
       let parse_Int;
       if (subitem.key.length > 0) {
@@ -127,7 +106,6 @@ function RangeSlider({ value, name, labels }) {
   }
   let step = (maxValue - minValue)/100;
 
-  console.log("====== SLIEDER DEBUG   START ======");
   const [sliderValues, setSliderValues] = useState([minValue,maxValue]);
   const [inputHead, setInputHead] = useState(minValue);
   const [inputTail, setInputTail] = useState(maxValue);
@@ -149,25 +127,25 @@ function RangeSlider({ value, name, labels }) {
   return (
     <div id={facet_item_id}>
       <div className="col-sm-11" style={{ paddingBottom: "20px", "white-space": "nowrap" }}>
-        <Slider.Range min={minValue} max={maxValue} step={step} onChange={handleSlide} defaultValue={sliderValues} value={sliderValues} />
+        <Slider range min={minValue} max={maxValue} step={step} onChange={handleSlide} defaultValue={sliderValues} value={sliderValues} />
       </div>
       <div className="form-group row">
         <div className="col-sm-5">
           <input type="number" id={facet_item_id + "_input_head"} className={headStyle}
             value={inputHead}
-            onChange={e => setInputHead(e.target.value)}
+            onChange={e => setInputHead(e.target.value.slice(0, 4))}
           />
         </div>
         <div className="col-sm-5">
           <input type="number" id={facet_item_id + "_input_tail"} className={tailStyle}
             value={inputTail}
-            onChange={e => setInputTail(e.target.value)}
+            onChange={e => setInputTail(e.target.value.slice(0, 4))}
           />
         </div>
         <div className="col-sm-2">
           <button type="button" style={{ marginLeft: "3px" }}
             className="btn btn-primary pull-right"
-            onClick={handleGo}> 検索
+            onClick={handleGo}> {labels['Goto']}
           </button>
         </div>
       </div>
