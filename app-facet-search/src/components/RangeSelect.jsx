@@ -5,6 +5,9 @@ import Select from "react-select";
 
 function RangeSelect({ values, name, labels }) {
 
+  //If there is a space in the id attribute, it cannot be searched by ID, so escape it.
+  let facet_item_id = "id_" + name + "_select";
+
   function handleChange(params) {
     search.delete(name);
     
@@ -14,7 +17,6 @@ function RangeSelect({ values, name, labels }) {
 
     if(search.get('q') === '0') search.set('q', '');
     search.set('is_facet_search', 'true');
-    console.log("============ PARAM :" + search.toString());
     window.invenioSearchFunctions.reSearchInvenio(search);
   }
 
@@ -35,7 +37,7 @@ function RangeSelect({ values, name, labels }) {
     });
   }
   return (
-    <div>
+    <div id={facet_item_id}>
       <div className="select-container">
         <Select
           defaultValue={defaultOptions}
