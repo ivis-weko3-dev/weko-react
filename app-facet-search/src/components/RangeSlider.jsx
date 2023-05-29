@@ -11,12 +11,12 @@ function RangeSlider({ value, name, labels}) {
     let headComp = document.getElementById(facet_item_id + "_input_head");
     let tailComp = document.getElementById(facet_item_id + "_input_tail");
 
-    //エラー情報のクリア
+    // Clear error information
     setHeadStyle('form-control');
     setTailStyle('form-control');
     setErrMsg('');
 
-    // 必須チェック
+    // Required Check
     if(!headComp.value || !tailComp.value){
       if(!headComp.value) {
         setHeadStyle('form-control range-slider-error');
@@ -27,8 +27,7 @@ function RangeSlider({ value, name, labels}) {
       setErrMsg(labels['facetSliderRequiredValidation']);
       return false;
     }
-    // 数値入力チェック
-    //TODO 型に応じた対応
+    // Numerical input check
     let pattern = new RegExp(/^([1-9]\d*|0)$/);
     let headResult = pattern.exec(inputHead);
     let tailResult = pattern.exec(inputTail);
@@ -45,14 +44,14 @@ function RangeSlider({ value, name, labels}) {
       return false;
     }
 
-    // 相関チェック
+    // Correlation Check
     if(parseFloat(inputHead) > parseFloat(inputTail)) {
       setHeadStyle('form-control range-slider-error');
       setTailStyle('form-control range-slider-error');
       setErrMsg(labels['facetSliderCorrelationValidation']);
       return false;
     }
-    //エラー情報のクリア
+    // Clear error information
     setHeadStyle('form-control');
     setTailStyle('form-control');
     setErrMsg('');
@@ -70,7 +69,6 @@ function RangeSlider({ value, name, labels}) {
   }
 
   function handleGo() {
-    //TODO チェックロジック
     if(!validateInputIsOk()) {
       return;
     }
@@ -78,12 +76,15 @@ function RangeSlider({ value, name, labels}) {
 
     if(search.get('q') === '0') search.set('q', '');
     search.set('is_facet_search', 'true');
-    window.invenioSearchFunctions.reSearchInvenio(search);
+    if(window.invenioSearchFunctions) {
+      window.invenioSearchFunctions.reSearchInvenio(search);
+    }else{
+      window.location.href = "/search?" + search;
+    }
   }
 
   let search = new URLSearchParams(window.location.search);
 
-  // TODO 汎用化
   let minValue = null;
   let maxValue = null;
   if(search.get(name) != null) {
@@ -114,7 +115,7 @@ function RangeSlider({ value, name, labels}) {
   const [errMsg, setErrMsg] = useState('');
 
   const clearSliderValue = () => {
-    //再呼び出しされた場合の情報再設定
+    // Information reconfiguration when recalled
     setSliderValues([minValue, maxValue]);
     setInputHead(minValue);
     setInputTail(maxValue);

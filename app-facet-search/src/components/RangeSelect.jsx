@@ -17,7 +17,11 @@ function RangeSelect({ values, name, labels }) {
 
     if(search.get('q') === '0') search.set('q', '');
     search.set('is_facet_search', 'true');
-    window.invenioSearchFunctions.reSearchInvenio(search);
+    if(window.invenioSearchFunctions) {
+      window.invenioSearchFunctions.reSearchInvenio(search);
+    }else{
+      window.location.href = "/search?" + search;
+    }
   }
 
   let search = new URLSearchParams(window.location.search);
@@ -36,6 +40,7 @@ function RangeSelect({ values, name, labels }) {
       }
     });
   }
+
   return (
     <div id={facet_item_id}>
       <div className="select-container">

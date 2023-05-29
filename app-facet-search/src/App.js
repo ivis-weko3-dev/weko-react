@@ -67,6 +67,7 @@ class FacetSearch extends React.Component {
       .then((res) => {
         if (search.get('search_type') == 2) {
           // Index faceted search
+          
           let aggregations = res && res.aggregations && res.aggregations.aggregations
               ? res.aggregations.aggregations[0] : {};
           this.convertData(aggregations);
@@ -91,11 +92,10 @@ class FacetSearch extends React.Component {
       	    let e = document.getElementById('lang-code');
       	    let l = e.options[e.selectedIndex].value;
       	    let tmp = list_facet[name];
-      
       	    for (let i = 0; i < tmp.buckets.length; i++) {
       	      let a = tmp.buckets[i];
-      
-      	      if ((l == "en") && ((a.key).charCodeAt(0) > 256 || (a.key).charCodeAt(a.key.length - 1) > 256)) {
+
+              if ((l == "en") && ((a.key).charCodeAt(0) > 256 || (a.key).charCodeAt(a.key.length - 1) > 256)) {
       	    	//delete list_facet[name].buckets[i];
               list_facet[name].buckets.splice(i,1);
               i--;
@@ -161,16 +161,20 @@ class FacetSearch extends React.Component {
   }
 }
 
+// Allows external parties to retrieve whether or not a Facet search item is loaded on the screen.
 const useFacetSearch = () => {
   return facetSearchComponent != null;
 }
 
+// Change Facet's search criteria. 
+// The argument Data assumes Json information about Facet searches aggregated by Elasticsearch.
 const resetFacetData = (data) => {
   if(facetSearchComponent != null) {
     facetSearchComponent.convertData(data);
   }
 }
 
+// Used to retrieve Facet's narrowing status from external sources.
 const getFacetSearchCondition = () => {
   let search = new URLSearchParams(window.location.search);
   let result = new URLSearchParams();
@@ -182,14 +186,23 @@ const getFacetSearchCondition = () => {
       }
     }
   });
-  console.debug(result);
   return result;
 }
 
+// Used to change State during testing. Do not use otherwise.
+const setStateForTest = (json_data) => {
+  facetSearchComponent.setState({ list_title: json_data.data.titles });
+  facetSearchComponent.setState({ list_order: json_data.data.order });
+  facetSearchComponent.setState({ list_uiType: json_data.data.uiTypes });
+  facetSearchComponent.setState({ list_isOpen: json_data.data.isOpens });
+  facetSearchComponent.setState({ list_displayNumber: json_data.data.displayNumbers });
+  facetSearchComponent.setState({ is_enable: true });
+}
 
 
 // Put the defined function in the key for the global variable of the window object.
 window.facetSearchFunctions = {};
+window.facetSearchFunctions.setStateForTest = setStateForTest;
 window.facetSearchFunctions.useFacetSearch = useFacetSearch;
 window.facetSearchFunctions.resetFacetData = resetFacetData;
 window.facetSearchFunctions.getFacetSearchCondition = getFacetSearchCondition;
