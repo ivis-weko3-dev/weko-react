@@ -94,6 +94,24 @@ function RangeSlider({ value, name, labels}) {
   } else if(value) {
     value.map(function (subitem, k) {
       let parse_Int;
+      if (subitem.key.includes('/')) {
+        let value1 = subitem.key.split('/')[0];
+        parse_Int = parseInt(value1);
+        if(minValue == null || minValue > parse_Int) {
+          minValue = parse_Int;
+        }
+        if(maxValue == null || maxValue < parse_Int) {
+          maxValue = parse_Int;
+        }
+        let value2 = subitem.key.split('/')[1];
+        parse_Int = parseInt(value2);
+        if(minValue == null || minValue > parse_Int) {
+          minValue = parse_Int;
+        }
+        if(maxValue == null || maxValue < parse_Int) {
+          maxValue = parse_Int;
+        }
+      }
       if (subitem.key.length > 0) {
         parse_Int = parseInt(subitem.key);
         if(minValue == null || minValue > parse_Int) {
