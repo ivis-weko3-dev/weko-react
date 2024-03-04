@@ -11,6 +11,7 @@ function RangeFacet({ item, nameshow, name, key, labels, isInitOpen, uiType, dis
   const search = window.location.search.replace(",", "%2C");
   const is_check = search.indexOf(encodeURIComponent(name)) >= 0 ? true : isInitOpen;
   const [isOpen, setIsOpen] = useState(is_check);
+  const isRecordsPath = window.location.pathname.split('/')[1].includes('records');
   return (
     <div className="panel panel-default" key={key}>
       <div className="panel-heading clearfix">
@@ -30,14 +31,14 @@ function RangeFacet({ item, nameshow, name, key, labels, isInitOpen, uiType, dis
       </div>
       <Collapse isOpen={isOpen}>
         <div className="panel-body index-body">
-          {item != null && uiType === "SelectBox" && (
-            <RangeSelect values={item.buckets} name={name} labels={labels} />
+          {!isRecordsPath && uiType === "SelectBox" && (
+            <RangeSelect values={item} name={name} labels={labels} />
           )}
-          {item != null && uiType === "CheckboxList" &&  (
-            <RangeCheckboxList values={item.buckets} name={name} labels={labels} displayNumber={displayNumber} />
+          {item != null && !isRecordsPath && uiType === "CheckboxList" &&  (
+            <RangeCheckboxList values={item} name={name} labels={labels} displayNumber={displayNumber} />
           )}
-          {item != null && uiType === "RangeSlider" && (
-            <RangeSlider value={item.buckets} name={name} labels={labels} />
+          {item != null && !isRecordsPath && uiType === "RangeSlider" && (
+            <RangeSlider value={item} name={name} labels={labels} />
           )}
         </div>
       </Collapse>

@@ -28,7 +28,7 @@ import React from "react";
  * on the portion outside the modal. The facet items that were selected before 
  * the refinement are cleared when the modal is closed.
  * 
- * @param {array} values An array consisting of faceted item names (key) and the number of items in the target (doc_count).
+ * @param {array} values An array consisting of faceted item names (name) and the number of items in the target (count).
  * @param {string} name English name of facet item.
  * @param {array} labels Array of labels used in translation.
  * @param {integer} displayNumber Number of items displayed in the list.
@@ -82,7 +82,7 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
    * Returns the DOM of a list of checkboxes.
    * This function is used for both List and Modal. The parameter isModal controls which use is made of this function.
    * 
-   * @param {array} values An array consisting of faceted item names (key) and the number of items in the target (doc_count).
+   * @param {array} values An array consisting of faceted item names (name) and the number of items in the target (count).
    * @param {string} name English name of facet item.
    * @param {bool} isModal True for modal use. false for list use.
    * @param {integer} displayNumber Number of items displayed in the list.
@@ -94,12 +94,12 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
       values.map((subitem,index) => {
         if (isModal || index < displayNumber) {
           let id = "id_" + name + (isModal ? "_chkbox_mdl_" : "_chkbox_") + index;
-          let label = subitem.key + "(" + subitem.doc_count + ")";
-          let checked = params.indexOf(name + "=" + subitem.key)!= -1;
+          let label = subitem.name + "(" + subitem.count + ")";
+          let checked = params.indexOf(name + "=" + subitem.name)!= -1;
           return (
             <div key={id}>
               <label htmlFor={id} >
-                <CheckBox id={id} value={subitem.key} checked={checked} key={id} onChange={onChange} />
+                <CheckBox id={id} value={subitem.name} checked={checked} key={id} onChange={onChange} />
                 {label}
               </label>
             </div>
@@ -112,7 +112,7 @@ function RangeCheckboxList({ values, name, labels, displayNumber }) {
   /**
    * Returns the modal DOM.
    * 
-   * @param {array} values An array consisting of faceted item names (key) and the number of items in the target (doc_count).
+   * @param {array} values An array consisting of faceted item names (name) and the number of items in the target (count).
    * @param {string} name English name of facet item.
    * @param {bool} modalId ID set for the modal.
    * @returns Modal DOM
