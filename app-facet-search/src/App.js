@@ -56,7 +56,7 @@ class FacetSearch extends React.Component {
   get_facet_search_list(key) {
         let search = new URLSearchParams(window.location.search);
         let convert_data;
-        if(key.length > 1 && Array.isArray(key)){
+        if(Array.isArray(key) > 1 && key.length ){
           key = key.join(",")
         }
         return fetch(`/api/facet-search/condition${'?' + 'key=' + key + '&' + search.toString()}`, {method: "GET"})
@@ -74,6 +74,7 @@ class FacetSearch extends React.Component {
         let hasName = data.hasOwnProperty(name);
         if (hasName) {
           list_facet[name] = data[name];
+          // Commented out as it is being corrected in JDCat.
           // //START:temporary fix for JDCat
           // if (name != "Time Period(s)" && name != "Data Language" && name != "Access") {
       	  //   let e = document.getElementById('lang-code');
