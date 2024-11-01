@@ -114,5 +114,4 @@ function RangeSlider({ value, name, labels }) {
   )
 }
 
-
 export default RangeSlider;

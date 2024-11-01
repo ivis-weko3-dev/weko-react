@@ -11,6 +11,7 @@ do
     ( cd "${CURRENT_DIR}/$dir"; npm install )
     ( cd "${CURRENT_DIR}/$dir"; npm run build )
 done <<END
+app-author-import
 app-facet-search
 END
 # build-end

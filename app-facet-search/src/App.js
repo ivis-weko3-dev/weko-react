@@ -60,48 +60,42 @@ class FacetSearch extends React.Component {
 
   convertData(data) {
     let list_facet = {};
-    const {list_order} = this.state;
     if (data) {
-      Object.keys(list_order).map(function (order, key_order) {
-        list_facet[list_order[order]] = {'buckets': []};
-        Object.keys(data).map(function (name, k) {
-          if (list_order[order] == name) {
-            let val = data[name][name] ? data[name][name] : data[name];
-            let hasBuckets = val["key"] && val["key"].hasOwnProperty("buckets");
-            hasBuckets = val.hasOwnProperty("buckets") || hasBuckets;
-            if (hasBuckets) {
-              list_facet[name] = val[name] ? val[name] : val;
-			  //START:temporary fix for JDCat
-			  if (name != "Time Period(s)" && name != "Data Language" && name != "Access") {
-				let e = document.getElementById('lang-code');
-				let l = e.options[e.selectedIndex].value;
-				let tmp = list_facet[name];
-	
-				for (let i = 0; i < tmp.buckets.length; i++) {
-				  let a = tmp.buckets[i];
-	
-				  if ((l == "en") && ((a.key).charCodeAt(0) > 256 || (a.key).charCodeAt(a.key.length - 1) > 256)) {
-					delete list_facet[name].buckets[i];
-				  } else if ((l != "en") && ((a.key).charCodeAt(0) < 256 && (a.key).charCodeAt(a.key.length - 1) < 256)) {
-					delete list_facet[name].buckets[i];
-				  }
-				}
-			  }
-			  if (name == "Access"){
-				let tmp = list_facet[name];
-	
-				for (let i = 0; i < tmp.buckets.length; i++) {
-				  let a = tmp.buckets[i];
-	
-				  if (((a.key).charCodeAt(0) > 256 || (a.key).charCodeAt(a.key.length - 1) > 256)) {
-					delete list_facet[name].buckets[i];
-				  } 
-				}
-			  }
-			  //END:temporary fix for JDCat
-            }
+      Object.keys(data).map(function (name, k) {
+        let val = data[name][name] ? data[name][name] : data[name];
+        let hasBuckets = val["key"] && val["key"].hasOwnProperty("buckets");
+        hasBuckets = val.hasOwnProperty("buckets") || hasBuckets;
+        if (hasBuckets) {
+          list_facet[name] = val[name] ? val[name] : val;
+          //START:temporary fix for JDCat
+          if (name != "Time Period(s)" && name != "Data Language" && name != "Access") {
+      	    let e = document.getElementById('lang-code');
+      	    let l = e.options[e.selectedIndex].value;
+      	    let tmp = list_facet[name];
+      
+      	    for (let i = 0; i < tmp.buckets.length; i++) {
+      	      let a = tmp.buckets[i];
+      
+      	      if ((l == "en") && ((a.key).charCodeAt(0) > 256 || (a.key).charCodeAt(a.key.length - 1) > 256)) {
+      	    	delete list_facet[name].buckets[i];
+      	      } else if ((l != "en") && ((a.key).charCodeAt(0) < 256 && (a.key).charCodeAt(a.key.length - 1) < 256)) {
+      	    	delete list_facet[name].buckets[i];
+      	      }
+      	    }
           }
-        });
+          if (name == "Access"){
+      	    let tmp = list_facet[name];
+      
+      	    for (let i = 0; i < tmp.buckets.length; i++) {
+      	      let a = tmp.buckets[i];
+      
+      	      if (((a.key).charCodeAt(0) > 256 || (a.key).charCodeAt(a.key.length - 1) > 256)) {
+      	    	delete list_facet[name].buckets[i];
+      	      } 
+      	    }
+          }
+          //END:temporary fix for JDCat
+        }
       });
     }
     this.setState({list_facet: list_facet});
@@ -113,12 +107,13 @@ class FacetSearch extends React.Component {
   }
 
   render() {
-    const { is_enable, list_title, list_facet } = this.state;
+    const { is_enable, list_title, list_facet, list_order } = this.state;
     return (
       <div>
         {is_enable && (
           <div className="facet-search break-word">
-            {Object.keys(list_facet).map(function (name, key) {
+            {Object.keys(list_order).map(function (order, key) {
+              const name = list_order[order];
               const item = list_facet[name];
               const nameshow = list_title[name];
               return (
