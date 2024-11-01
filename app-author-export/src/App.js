@@ -20,7 +20,8 @@ class AuthorExport extends React.Component {
       isExporting: false,
       errorMsg: '',
       taskId: localStorage.getItem('authors_export_id'),
-      downloadLink: ''
+      downloadLink: '',
+      filename: ''
     }
   }
 
@@ -132,6 +133,7 @@ class AuthorExport extends React.Component {
               }
             }
             result.downloadLink = data.download_link;
+            result.filename = data.filename;
           } else {
             result.errorMsg = bridge_params.internal_server_error;
           }
@@ -165,7 +167,7 @@ class AuthorExport extends React.Component {
   }
 
   render() {
-    const { errorMsg, downloadLink, isExporting, isChecking,
+    const { errorMsg, downloadLink, filename, isExporting, isChecking,
       showConfirmModal, confirmMessage
     } = this.state;
     return (
@@ -196,7 +198,7 @@ class AuthorExport extends React.Component {
           <div className="row">
             <div className="col-sm-12">
               <a href={downloadLink}>
-                {downloadLink}
+                {filename}
               </a>
             </div>
           </div>
