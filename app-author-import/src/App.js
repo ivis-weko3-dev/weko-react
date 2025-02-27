@@ -23,6 +23,9 @@ class AuthorImport extends React.Component {
       tasks: [],
       task_ids: [],
       records: [],
+      counts:{},
+      currentPage: 1,
+      maxPage: 0,
       importStatus: config.IMPORT_STATUS.NONE,
       isShowMessage: false,
       setStep: this.setStep,
@@ -30,7 +33,9 @@ class AuthorImport extends React.Component {
       setErrorMessage: this.setErrorMessage,
       isImportAvailable: this.isImportAvailable,
       setImportData: this.setImportData,
-      setTaskData: this.setTaskData
+      setRecords: this.setRecords,
+      setTaskData: this.setTaskData,
+      setCurrentPage: this.setCurrentPage,
     }
   }
 
@@ -40,6 +45,17 @@ class AuthorImport extends React.Component {
 
   setStep = (step) => {
     this.setState({ step });
+  };
+
+  setRecords = (records) => {
+    records.forEach(record => {
+      record.fullname = prepareDisplayName(record.authorNameInfo);
+    });
+    this.setState({ records });
+  };
+
+  setCurrentPage = (currentPage) => {
+    this.setState({ currentPage });
   };
 
   onChangeTab = (tab) => {
@@ -58,6 +74,10 @@ class AuthorImport extends React.Component {
   };
 
   setImportData = (records) => {
+    console.log(records);
+    let counts = records.counts||{};
+    let maxPage = records.max_page;
+    records = records.list_import_data;
     const canImport = records.filter(item => {
       return !item.errors || item.errors.length === 0;
     }).length > 0;
@@ -68,7 +88,9 @@ class AuthorImport extends React.Component {
 
     this.setState({
       tab: 'import',
-      records,
+      records: records,
+      counts: counts,
+      maxPage: maxPage,
       importStatus: canImport ? config.IMPORT_STATUS.PENDING : config.IMPORT_STATUS.NONE,
       step: config.STEPS.IMPORT_STEP,
       errorMsg: ''

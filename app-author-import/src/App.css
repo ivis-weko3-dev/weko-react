@@ -68,6 +68,10 @@
   text-align: right;
 }
 
+.alignCenter{
+  text-align: center
+}
+
 .flex-box {
   display: flex;
   justify-content: space-between;

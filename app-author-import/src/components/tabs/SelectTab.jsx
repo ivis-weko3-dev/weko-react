@@ -65,7 +65,7 @@ class SelectTab extends React.Component {
             if (json.error) {
                 setErrorMessage(json.error);
             } else {
-                setImportData(json.list_import_data);
+                setImportData(json);
             }
         } catch (error) {
             setErrorMessage(bridge_params.internal_server_error);

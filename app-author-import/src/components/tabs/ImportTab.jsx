@@ -12,6 +12,38 @@ import { cleanArrayData, JSONToCSVConvertor } from "../../Common";
 class ImportTab extends React.Component {
     static contextType = AppContext;
 
+
+
+    handlePageChange = async(pageNumber) => {
+        // ページ変更時の処理をここに追加
+        const { setRecords, setErrorMessage, setCurrentPage } = this.context;
+        if (!pageNumber) {
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                bridge_params.entrypoints.check_pagination,
+                {
+                    method: "POST",
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        page_number: pageNumber
+                    }),
+                }
+            );
+            const json = await response.json();
+            if (json.error) {
+                setErrorMessage(json.error);
+            } else {
+                setCurrentPage(pageNumber);
+                setRecords(json);
+            }
+        } catch (error) {
+            setErrorMessage(bridge_params.internal_server_error);
+        }
+    };
+
     handleDownload = () => {
         const { records } = this.context;
         const data = records.map((item, key) => {
@@ -51,20 +83,13 @@ class ImportTab extends React.Component {
         }
     }
 
-    summaryDataImport = (records) => {
-        const numTotal = records.length;
-        const numNews = records.filter((item) => {
-            return item.status === 'new' && !item.errors;
-        }).length;
-        const numUpdates = records.filter((item) => {
-            return item.status === 'update' && !item.errors;
-        }).length;
-        const numDeleteds = records.filter((item) => {
-            return item.status === 'deleted' && !item.errors;
-        }).length;
-        const numErrors = records.filter((item) => {
-            return item.errors;
-        }).length;
+    summaryDataImport = (counts) => {
+        console.log(counts);
+        const numTotal = counts.num_total;
+        const numNews = counts.num_new;
+        const numUpdates = counts.num_update;
+        const numDeleteds = counts.num_delete;
+        const numErrors = counts.num_error;
 
         return { numTotal, numNews, numUpdates, numDeleteds, numErrors };
     }
@@ -169,9 +194,8 @@ class ImportTab extends React.Component {
     }
 
     render() {
-        const { records, importStatus } = this.context;
-        const { numTotal, numNews, numUpdates, numDeleteds, numErrors } = this.summaryDataImport(records);
-
+        const { records, importStatus, counts, currentPage, maxPage} = this.context;
+        const { numTotal, numNews, numUpdates, numDeleteds, numErrors } = this.summaryDataImport(counts);
         return (
             <div className="check-component">
                 <div className="row">
@@ -238,9 +262,52 @@ class ImportTab extends React.Component {
                             </tbody>
                         </table>
                     </div>
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={maxPage}
+                        onPageChange={this.handlePageChange}
+                    />
                 </div>
             </div>
         )
+    }
+}
+
+class Pagination extends React.Component {
+    render() {
+        const { currentPage, totalPages, onPageChange } = this.props;
+
+        const pageNumbers = [];
+        const startPage = Math.max(1, currentPage - 5);
+        const endPage = Math.min(totalPages, currentPage + 4);
+
+        for (let i = startPage; i <= endPage; i++) {
+            pageNumbers.push(i);
+        }
+
+        return (
+            <div className="col-sm-12 col-md-12 alignCenter">
+                <ul className="pagination">
+                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                        <a onClick={() => onPageChange(currentPage - 1)} className="page-link">
+                            &lt;
+                        </a>
+                    </li>
+                    {pageNumbers.map(number => (
+                        <li key={number} className={`page-item ${number === currentPage ? 'active' : ''}`}>
+                            <a onClick={() => onPageChange(number)} className="page-link">
+                                {number}
+                            </a>
+                        </li>
+                    ))}
+                    <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                        <a onClick={() => onPageChange(currentPage + 1)} className="page-link">
+                            &gt;
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        );
     }
 }
 
