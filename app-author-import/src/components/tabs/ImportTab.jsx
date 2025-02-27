@@ -44,7 +44,34 @@ class ImportTab extends React.Component {
         }
     };
 
-    handleDownload = () => {
+    handleDownload = async() => {
+        const {setErrorMessage, maxPage} = this.context;
+        try {
+            const response = await fetch(
+                bridge_params.entrypoints.check_file_download,
+                {
+                    method: "POST",
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        max_page:maxPage 
+                    }),
+                }
+            );
+            if (response.ok){
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Creator_Check_' + moment().format("YYYYDDMM") + '.tsv';
+                a.click();
+                window.URL.revokeObjectURL(url);
+            }
+        } catch (error) {
+            setErrorMessage(bridge_params.internal_server_error);
+        }
+    };
+
+    handleDownload2 = () => {
         const { records } = this.context;
         const data = records.map((item, key) => {
             const mail = item.emailInfo ? cleanArrayData(item.emailInfo.map((email) => {
