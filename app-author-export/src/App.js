@@ -18,6 +18,7 @@ class AuthorExport extends React.Component {
       confirmMessage: '',
       isChecking: false,
       isExporting: false,
+      isTarget:"author_db",
       errorMsg: '',
       taskId: localStorage.getItem('authors_export_id'),
       downloadLink: '',
@@ -37,6 +38,12 @@ class AuthorExport extends React.Component {
     }
 
     this.onClose();
+  }
+
+  onChangeTarget = (e) => {
+    this.setState({
+      isTarget: e.target.value
+    });
   }
 
   onConfirm = (isExport) => {
@@ -89,7 +96,7 @@ class AuthorExport extends React.Component {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({}),
+          body: JSON.stringify({ isTarget: this.state.isTarget })
         }
       );
       const json = await response.json();
@@ -167,13 +174,52 @@ class AuthorExport extends React.Component {
   }
 
   render() {
-    const { errorMsg, downloadLink, filename, isExporting, isChecking,
+    const { errorMsg, downloadLink, filename, isExporting, isChecking, isTarget,
       showConfirmModal, confirmMessage
     } = this.state;
+    let downloadUrlLabel;
+    if (isTarget === 'author_db') {
+      downloadUrlLabel = bridge_params.author_db_label;
+    }else if (isTarget === 'id_prefix') {
+      downloadUrlLabel = bridge_params.id_prefix_label;
+    }else if (isTarget === 'affiliation_id') {
+      downloadUrlLabel = bridge_params.affiliation_id_label
+    }
+    
+    let correctDownloadLink = "";
+    let fileNameLabel = "";
+    if (filename.startsWith('Creator_export') && isTarget === 'author_db') {
+      correctDownloadLink = downloadLink;
+      fileNameLabel = filename;
+    } else if (filename.startsWith('Id_prefix_export') && isTarget === 'id_prefix') {
+      correctDownloadLink = downloadLink;
+      fileNameLabel = filename;
+    } else if (filename.startsWith('Affiliation_id_export') && isTarget === 'affiliation_id') {
+      correctDownloadLink = downloadLink;
+      fileNameLabel = filename;
+    }
+
     return (
       <>
         <div className="col-sm-12">
           <AlertDismissible type='danger' msg={errorMsg} onClose={() => this.setState({ errorMsg: '' })} />
+
+          <div className="row">
+            <div className="col-md-2 col-cd">
+              <label>{bridge_params.export_target}</label>
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-md-1 select-margin">
+              <div>
+                <select className="form-control" defaultValue={"author_db"} onChange={this.onChangeTarget}>
+                  <option value="author_db">{bridge_params.author_db_label}</option>
+                  <option value="id_prefix">{bridge_params.id_prefix_label}</option>
+                  <option value="affiliation_id">{bridge_params.affiliation_id_label}</option>
+                </select>
+              </div>
+            </div>
+          </div>
           <div className="row">
             <div className="col-sm-12">
               <label>{bridge_params.export_all_label}</label>
@@ -197,12 +243,13 @@ class AuthorExport extends React.Component {
           </div>
           <div className="row">
             <div className="col-sm-12">
-              <a href={downloadLink}>
-                {filename}
+              {correctDownloadLink ? downloadUrlLabel+"：" : ""}
+              <a href={correctDownloadLink}>
+                {fileNameLabel}
               </a>
             </div>
           </div>
-        </div>
+        </div >
         <ConfirmModal show={showConfirmModal} confirmMessage={confirmMessage} onAction={this.onAction} onClose={this.onClose} />
       </>
     )

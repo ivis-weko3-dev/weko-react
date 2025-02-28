@@ -13,6 +13,10 @@
   height: 35px;
 }
 
+.select-margin{
+  margin-left: 15%;
+}
+
 .loading {
   position: relative;
   display: inline-block;
