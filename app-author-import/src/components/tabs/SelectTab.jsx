@@ -110,7 +110,7 @@ class SelectTab extends React.Component {
                             <div className="col-md-2">
                                 <button
                                     className="btn btn-primary"
-                                    disabled={!file || importStatus === config.IMPORT_STATUS.IMPORTING}
+                                    disabled={!file || importStatus === config.IMPORT_STATUS.IMPORTING || isChecking}
                                     onClick={this.onCheckImportFile}>
                                     {isChecking ? <div className="loading" /> : <span className="glyphicon glyphicon-download-alt icon"></span>}
                                     {bridge_params.next_label}

@@ -38,6 +38,7 @@ class ImportTab extends React.Component {
             } else {
                 setCurrentPage(pageNumber);
                 setRecords(json);
+                window.scrollTo(0, 0);
             }
         } catch (error) {
             setErrorMessage(bridge_params.internal_server_error);
@@ -71,44 +72,6 @@ class ImportTab extends React.Component {
         }
     };
 
-    handleDownload2 = () => {
-        const { records } = this.context;
-        const data = records.map((item, key) => {
-            const mail = item.emailInfo ? cleanArrayData(item.emailInfo.map((email) => {
-                return email.email;
-            })).join('\n') : '';
-            const error = item.errors ? item.errors.map(e => {
-                return bridge_params.error_label + ': ' + e;
-            }).join('\n').replace('<br/>', '\n') : '';
-            const warning = item.warnings ? item.warnings.map(e => {
-                return bridge_params.warning_label + ': ' + e;
-            }).join('\n').replace('<br/>', '\n') : '';
-
-            return {
-                [bridge_params.no_label]: key + 1,
-                [bridge_params.weko_id_label]: item.pk_id,
-                [bridge_params.name_label]: item.fullname.join('\n'),
-                [bridge_params.mail_address_label]: mail,
-                [bridge_params.check_result_label]: (
-                    (
-                        item.errors ?
-                            error
-                            : (item.status === 'new' ?
-                                bridge_params.register_label
-                                : (item.status === 'update' ?
-                                    bridge_params.update_label
-                                    : (item.status === 'deleted' ? bridge_params.deleted_label : '')
-                                )
-                            )
-                    ) + (warning ? '\n' : '') + (warning)
-                )
-            }
-        });
-
-        if (data) {
-            JSONToCSVConvertor(data, 'Creator_Check_' + moment().format("YYYYDDMM"), true);
-        }
-    }
 
     summaryDataImport = (counts) => {
         console.log(counts);
@@ -122,11 +85,12 @@ class ImportTab extends React.Component {
     }
 
     renderTableItem = (records) => {
+        const { currentPage } = this.context;
         return records.map((item, key) => {
             return (
                 <tr key={key}>
                     <td>
-                        {key + 1}
+                        {key + 1 + (currentPage - 1) * config.IMPORT_RECORDS_PER_PAGE}
                     </td>
                     <td>{item.pk_id}</td>
                     <td>

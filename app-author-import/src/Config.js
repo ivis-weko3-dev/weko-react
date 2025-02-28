@@ -24,6 +24,8 @@ export const TABS = [
     }
 ];
 
+export const IMPORT_RECORDS_PER_PAGE = 100;
+
 export const IMPORT_STATUS = {
     NONE: 0,
     PENDING: 1,
