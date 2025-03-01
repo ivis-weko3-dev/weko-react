@@ -4,6 +4,7 @@ import * as bridge_params from "../../Bridge";
 import * as config from "../../Config";
 
 import { AppContext } from '../../Context';
+import { result } from "lodash";
 
 class SelectTab extends React.Component {
     static contextType = AppContext;
@@ -23,7 +24,59 @@ class SelectTab extends React.Component {
         return split_path.pop();
     }
 
-    onChangeFile = (e) => {
+    onChangeTarget = (e) => {
+        const { setTarget } = this.context;
+        this.setState({ file: null, fileName: "" });
+        setTarget(e.target.value);
+    }
+    
+    onChangeFile = async (e) => {
+        const { isTarget, setErrorMessage } = this.context;
+        const file = e.target.files[0];
+        const fileName = this.getLastString(e.target.value, "\\");
+        if (this.getLastString(fileName, ".") !== 'tsv') {
+            return false;
+        }
+        this.setState({ fileName });
+    
+        const reader = file.stream().getReader();
+        const decoder = new TextDecoder('utf-8');
+        let fileContent = '';
+        let firstLine = '';
+    
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            fileContent += decoder.decode(value, { stream: true });
+    
+            firstLine = fileContent.split('\n')[0];
+            let validate_target = this.validateFirstLine(isTarget, firstLine);
+            if (!validate_target) {
+                setErrorMessage(bridge_params.different_format_file_for_target);
+                return;
+            }
+        }
+    
+        this.setState({ file: fileContent });
+    }
+
+    validateFirstLine = (isTarget, line) => {
+        let validateResult = true;
+        const trimmedLine = line.trim();
+        if (isTarget === "id_prefix") {
+            validateResult = (trimmedLine === "#author_prefix_settings");
+            console.log("id_prefix here");
+        }else if (isTarget === "affiliation_id" ){
+            validateResult = (trimmedLine === "#author_affiliation_settings");
+            console.log("affiliation_id here");
+        }else if (isTarget === "author_db" ){
+            validateResult = (trimmedLine !== "#author_prefix_settings") && (trimmedLine !== "#author_affiliation_settings");
+        }
+        return validateResult;
+    }
+
+    onChangeFile2 = (e) => {
+        const { isTarget } = this.context;
         const file = e.target.files[0];
         const fileName = this.getLastString(e.target.value, "\\");
         if (this.getLastString(fileName, ".") !== 'tsv') {
@@ -82,9 +135,27 @@ class SelectTab extends React.Component {
                     <div className="col-sm-12">
                         <div className="row">
                             <div className="col-md-2 col-cd">
+                                <label>{bridge_params.import_target}</label>
+                            </div>
+                        </div>
+                        <div className="row">
+                            <div className="margin width-10percent">
+                                <div>
+                                    <select className="form-control" defaultValue={"author_db"} onChange={this.onChangeTarget}>
+                                        <option value="author_db">{bridge_params.author_db_label}</option>
+                                        <option value="id_prefix">{bridge_params.id_prefix_label}</option>
+                                        <option value="affiliation_id">{bridge_params.affiliation_id_label}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="row">
+                            <div className="col-md-2 col-cd">
                                 <label>{bridge_params.select_file_label}</label>
                             </div>
-                            <div className="col-md-8">
+                        </div>
+                        <div className="row">
+                            <div className="col-md-8 margin">
                                 <div>
                                     <button
                                         className="btn btn-primary"

@@ -23,6 +23,14 @@
   }
 }
 
+.margin{
+  margin-left: 15%;
+}
+
+.width-10percent {
+  width: 10%;
+}
+
 .opacity1 {
   opacity: 1;
 }

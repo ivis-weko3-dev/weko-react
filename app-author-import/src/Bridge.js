@@ -11,6 +11,10 @@ export const name_label = document.getElementById("name").value;
 export const select_file_label = document.getElementById("select_file").value;
 export const selected_file_name_label = document.getElementById("selected_file_name").value;
 export const next_label = document.getElementById("next").value;
+export const import_target = document.getElementById("import_target").value;
+export const author_db_label = document.getElementById("author_db_label").value;
+export const id_prefix_label = document.getElementById("id_prefix_label").value;
+export const affiliation_id_label = document.getElementById("affiliation_id_label").value;
 
 // import
 export const summary = document.getElementById("summary").value;
@@ -39,6 +43,7 @@ export const update_label = document.getElementById("update").value;
 export const deleted_label = document.getElementById("deleted").value;
 
 //error
+export const different_format_file_for_target = document.getElementById("different_format_file_for_target").value;
 export const internal_server_error = document.getElementById("internal_server_error").value;
 export const celery_not_run = document.getElementById("celery_not_run").value;
 export const not_available_error = document.getElementById("not_available_error").value;

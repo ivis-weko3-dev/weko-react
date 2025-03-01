@@ -25,7 +25,9 @@ class AuthorImport extends React.Component {
       records: [],
       importStatus: config.IMPORT_STATUS.NONE,
       isShowMessage: false,
+      isTarget: "author_db",
       setStep: this.setStep,
+      setTarget: this.setTarget,
       onChangeTab: this.onChangeTab,
       setErrorMessage: this.setErrorMessage,
       isImportAvailable: this.isImportAvailable,
@@ -40,6 +42,10 @@ class AuthorImport extends React.Component {
 
   setStep = (step) => {
     this.setState({ step });
+  };
+
+  setTarget = (isTarget) => {
+    this.setState({ isTarget });
   };
 
   onChangeTab = (tab) => {
