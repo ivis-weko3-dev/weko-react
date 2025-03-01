@@ -43,8 +43,8 @@ class SelectTab extends React.Component {
         const decoder = new TextDecoder('utf-8');
         let fileContent = '';
         let firstLine = '';
-    
-        while (true) {
+        let one_line_flag = true;
+        while (one_line_flag) {
             const { done, value } = await reader.read();
             if (done) break;
             fileContent += decoder.decode(value, { stream: true });
@@ -54,10 +54,17 @@ class SelectTab extends React.Component {
             if (!validate_target) {
                 setErrorMessage(bridge_params.different_format_file_for_target);
                 return;
+            }else{
+                one_line_flag = false;
             }
         }
-    
-        this.setState({ file: fileContent });
+        const filereader = new FileReader();
+        filereader.onload = () => {
+            this.setState({
+                file: filereader.result
+            });
+        };
+        filereader.readAsDataURL(file);
     }
 
     validateFirstLine = (isTarget, line) => {
@@ -75,27 +82,8 @@ class SelectTab extends React.Component {
         return validateResult;
     }
 
-    onChangeFile2 = (e) => {
-        const { isTarget } = this.context;
-        const file = e.target.files[0];
-        const fileName = this.getLastString(e.target.value, "\\");
-        if (this.getLastString(fileName, ".") !== 'tsv') {
-            return false;
-        }
-
-        this.setState({ fileName });
-
-        const reader = new FileReader();
-        reader.onload = () => {
-            this.setState({
-                file: reader.result
-            });
-        };
-        reader.readAsDataURL(file);
-    }
-
     onCheckImportFile = async () => {
-        const { setImportData, setErrorMessage } = this.context;
+        const { setImportData, isTarget, setErrorMessage } = this.context;
         const { fileName, file } = this.state;
         if (!file) {
             return;
@@ -110,7 +98,8 @@ class SelectTab extends React.Component {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         file_name: fileName,
-                        file
+                        file,
+                        target: isTarget
                     }),
                 }
             );
