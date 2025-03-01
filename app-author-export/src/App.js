@@ -210,7 +210,7 @@ class AuthorExport extends React.Component {
             </div>
           </div>
           <div className="row">
-            <div className="col-md-1 select-margin">
+            <div className="select-margin">
               <div>
                 <select className="form-control" defaultValue={"author_db"} onChange={this.onChangeTarget}>
                   <option value="author_db">{bridge_params.author_db_label}</option>
