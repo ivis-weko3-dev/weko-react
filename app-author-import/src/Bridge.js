@@ -25,6 +25,9 @@ export const delete_creator_label = document.getElementById("delete_creator").va
 export const result_error_label = document.getElementById("check_error").value;
 export const mail_address_label = document.getElementById("mail_address").value;
 export const check_result_label = document.getElementById("check_result").value;
+export const scheme_label = document.getElementById("scheme").value;
+export const scheme_name_label = document.getElementById("scheme_name").value;
+export const scheme_url_label = document.getElementById("scheme_url").value;
 
 // result
 export const start_date_label = document.getElementById("start_date").value;

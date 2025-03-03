@@ -72,10 +72,8 @@ class SelectTab extends React.Component {
         const trimmedLine = line.trim();
         if (isTarget === "id_prefix") {
             validateResult = (trimmedLine === "#author_prefix_settings");
-            console.log("id_prefix here");
         }else if (isTarget === "affiliation_id" ){
             validateResult = (trimmedLine === "#author_affiliation_settings");
-            console.log("affiliation_id here");
         }else if (isTarget === "author_db" ){
             validateResult = (trimmedLine !== "#author_prefix_settings") && (trimmedLine !== "#author_affiliation_settings");
         }

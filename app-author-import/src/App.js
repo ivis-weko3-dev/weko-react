@@ -141,7 +141,7 @@ class AuthorImport extends React.Component {
   onCheckImportStatus = async () => {
     return await new Promise(resolve => {
       const intervalCheckStatus = setInterval(async () => {
-        const { tasks, task_ids } = this.state;
+        const { tasks, task_ids, isTarget } = this.state;
         let errorMsg = '';
         let isDone = true;
 
@@ -153,7 +153,10 @@ class AuthorImport extends React.Component {
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ tasks: task_ids })
+              body: JSON.stringify({
+                tasks: task_ids, 
+                isTarget: isTarget
+              })
             }
           );
           const data = await response.json();
