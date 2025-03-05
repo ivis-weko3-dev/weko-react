@@ -74,7 +74,6 @@ class AuthorImport extends React.Component {
   };
 
   setImportData = (records) => {
-    console.log(records);
     let counts = records.counts||{};
     let maxPage = records.max_page;
     records = records.list_import_data;

@@ -23,13 +23,10 @@ class ImportTab extends React.Component {
 
         try {
             const response = await fetch(
-                bridge_params.entrypoints.check_pagination,
+                `${bridge_params.entrypoints.check_pagination}?page_number=${pageNumber}`,
                 {
-                    method: "POST",
+                    method: "GET",
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        page_number: pageNumber
-                    }),
                 }
             );
             const json = await response.json();
@@ -74,7 +71,6 @@ class ImportTab extends React.Component {
 
 
     summaryDataImport = (counts) => {
-        console.log(counts);
         const numTotal = counts.num_total;
         const numNews = counts.num_new;
         const numUpdates = counts.num_update;
