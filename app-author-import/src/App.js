@@ -175,7 +175,8 @@ class AuthorImport extends React.Component {
           );
           const data = await response.json();
           if (data) {
-            const _tasks = data.map(taskInfo => {
+            const frontTask = data.tasks;
+            const _tasks = frontTask.map(taskInfo => {
               const current_tasks = tasks.filter(task => task.task_id === taskInfo.task_id);
               const current_task = current_tasks && current_tasks.length > 0 ? current_tasks[0] : false;
               if (current_task) {
@@ -190,7 +191,16 @@ class AuthorImport extends React.Component {
               }
               return current_task;
             });
-
+            if (data.over_max){
+              const overMaxStatus = data.over_max.status
+              if(overMaxStatus === 'PENDING'){
+                isDone = false;
+              }
+              else if (overMaxStatus === 'FAILURE'){
+                errorMsg = bridge_params.import_fail_error;
+              }
+            }
+            
             this.setState({
               tasks: _tasks,
               importStatus: isDone ? config.IMPORT_STATUS.DONE : config.IMPORT_STATUS.IMPORTING

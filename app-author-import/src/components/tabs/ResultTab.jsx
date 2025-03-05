@@ -44,11 +44,32 @@ class ResultTab extends React.Component {
                 [bridge_params.status_label]: this.prepareDisplayStatus(task.status, task.type, task.error_id)
             }
         })
-        if (data) {
-            JSONToCSVConvertor(data, 'Creator_List_Download_' + moment().format("YYYYDDMM"), true);
+        try {
+            const response = await fetch(
+                bridge_params.entrypoints.result_download,
+                {
+                    method: "POST",
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        json: data
+                    }),
+                }
+            );
+            if (response.Result === "Dont need to create result file" && data) {
+                JSONToCSVConvertor(data, 'Creator_List_Download_' + moment().format("YYYYDDMM"), true);
+            } else if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Creator_List_Download_' + moment().format("YYYYMMDDhhmm") + '.tsv';
+                a.click();
+                window.URL.revokeObjectURL(url);
+            }
+        } catch (error) {
+            console.log(error);
         }
     }
-
     handlePageChange = async (pageNumber) => {
         const { maxPage, setErrorMessage, setCurrentPage } = this.context;
         if (!pageNumber) {
@@ -61,14 +82,14 @@ class ResultTab extends React.Component {
     };
 
     renderTableItem = (tasks) => {
-        const {currentPage} = this.context;
+        const { currentPage } = this.context;
         const start = (currentPage - 1) * config.PAGE_SIZE;
         const end = currentPage * config.PAGE_SIZE;
         tasks = tasks.slice(start, end);
         return tasks.map((task, key) => {
             return (
                 <tr key={key}>
-                    <td>{key + 1}</td>
+                    <td>{start + key + 1}</td>
                     <td>{task.start_date ? task.start_date : ''}</td>
                     <td>{task.end_date ? task.end_date : ''}</td>
                     <td>{task.record_id || ''}</td>
