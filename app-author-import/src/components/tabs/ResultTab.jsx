@@ -49,7 +49,22 @@ class ResultTab extends React.Component {
         }
     }
 
+    handlePageChange = async (pageNumber) => {
+        const { maxPage, setErrorMessage, setCurrentPage } = this.context;
+        if (!pageNumber) {
+            return;
+        }
+        if (pageNumber < 1 || pageNumber > maxPage) {
+            return;
+        }
+        setCurrentPage(pageNumber);
+    };
+
     renderTableItem = (tasks) => {
+        const {currentPage} = this.context;
+        const start = (currentPage - 1) * config.PAGE_SIZE;
+        const end = currentPage * config.PAGE_SIZE;
+        tasks = tasks.slice(start, end);
         return tasks.map((task, key) => {
             return (
                 <tr key={key}>
@@ -73,7 +88,7 @@ class ResultTab extends React.Component {
     };
 
     render() {
-        const { tasks, recordNames, importStatus } = this.context;
+        const { tasks, recordNames, importStatus, currentPage, maxPage } = this.context;
         return (
             <div className="result_container row">
                 <div className="col-md-12 text-align-right">
@@ -100,10 +115,52 @@ class ResultTab extends React.Component {
                             {this.renderTableItem(tasks, recordNames)}
                         </tbody>
                     </table>
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={maxPage}
+                        onPageChange={this.handlePageChange}
+                    />
                 </div>
             </div>
         )
     }
 }
 
+class Pagination extends React.Component {
+    render() {
+        const { currentPage, totalPages, onPageChange } = this.props;
+
+        const pageNumbers = [];
+        const startPage = Math.max(1, currentPage - 5);
+        const endPage = Math.min(totalPages, currentPage + 4);
+
+        for (let i = startPage; i <= endPage; i++) {
+            pageNumbers.push(i);
+        }
+
+        return (
+            <div className="col-sm-12 col-md-12 alignCenter">
+                <ul className="pagination">
+                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                        <a onClick={() => onPageChange(currentPage - 1)} className="page-link">
+                            &lt;
+                        </a>
+                    </li>
+                    {pageNumbers.map(number => (
+                        <li key={number} className={`page-item ${number === currentPage ? 'active' : ''}`}>
+                            <a onClick={() => onPageChange(number)} className="page-link">
+                                {number}
+                            </a>
+                        </li>
+                    ))}
+                    <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                        <a onClick={() => onPageChange(currentPage + 1)} className="page-link">
+                            &gt;
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        );
+    }
+}
 export default ResultTab;

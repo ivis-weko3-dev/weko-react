@@ -5,6 +5,7 @@ import cleanDeep from "clean-deep";
 
 import * as bridge_params from "../../Bridge";
 import * as config from "../../Config";
+import { prepareDisplayName } from "../../Common";
 
 import { AppContext } from '../../Context';
 import { cleanArrayData, JSONToCSVConvertor } from "../../Common";
@@ -60,7 +61,7 @@ class ImportTab extends React.Component {
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'Creator_Check_' + moment().format("YYYYDDMM") + '.tsv';
+                a.download = 'Creator_Check_' + moment().format("YYYYMMDDhhmm") + '.tsv';
                 a.click();
                 window.URL.revokeObjectURL(url);
             }
@@ -132,12 +133,11 @@ class ImportTab extends React.Component {
     }
 
     onImport = async () => {
-        const { records, setErrorMessage, setTaskData } = this.context;
+        const { setErrorMessage, setTaskData, maxPage } = this.context;
         let errorMsg = '';
 
         try {
             const importAuthorTaskId = localStorage.getItem(config.IMPORT_AUTHOR_TASK_ID_KEY);
-            const importRecords = records.filter(item => !item.errors);
             const response = await fetch(
                 bridge_params.entrypoints.import,
                 {
@@ -147,18 +147,17 @@ class ImportTab extends React.Component {
                     },
                     body: JSON.stringify({
                         group_task_id: importAuthorTaskId,
-                        records: cleanDeep(importRecords.map(item => {
-                            const newItem = _.cloneDeep(item);
-                            delete newItem.fullname;
-                            delete newItem.warnings;
-                            return newItem;
-                        }))
+                        max_page: maxPage,
                     })
                 }
             );
             const json = await response.json();
             if (json.data) {
+                const importRecords = json.records;
                 json.data.tasks.forEach((task, idx) => {
+                    importRecords.forEach(record => {
+                      record.fullname = prepareDisplayName(record.authorNameInfo);
+                    });
                     task.fullname = importRecords[idx].fullname;
                     task.type = importRecords[idx].status;
                 });

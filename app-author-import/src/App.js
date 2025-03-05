@@ -103,6 +103,8 @@ class AuthorImport extends React.Component {
       tasks,
       tab: 'result',
       step: config.STEPS.RESULT_STEP,
+      currentPage: 1,
+      maxPage: Math.ceil(tasks.length/100),
       importStatus: config.IMPORT_STATUS.IMPORTING,
       task_ids: tasks.map(task => task.task_id)
     });
