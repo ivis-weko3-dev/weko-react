@@ -109,16 +109,40 @@ class ResultTab extends React.Component {
     };
 
     render() {
-        const { tasks, recordNames, importStatus, currentPage, maxPage } = this.context;
+        const { tasks, recordNames, importStatus, currentPage, maxPage,
+             total, success, failure, pending } = this.context;
         return (
             <div className="result_container row">
-                <div className="col-md-12 text-align-right">
-                    <button
-                        className="btn btn-primary"
-                        onClick={this.handleDownload}
-                        disabled={importStatus === config.IMPORT_STATUS.IMPORTING}>
-                        <span className="glyphicon glyphicon-cloud-download icon"></span>{bridge_params.download_label}
-                    </button>
+                <div className="col-md-12 text-center">
+                    <div className="row block-summary">
+                        <div className="col-lg-2 col-md-3 col-sm-3">
+                            <h3><b>{bridge_params.summary}</b></h3>
+                            <div className="flex-box">
+                                <div>{bridge_params.total_label}:</div>
+                                <div>{total}</div>
+                            </div>
+                            <div className="flex-box">
+                                <div>{bridge_params.success_label}:</div>
+                                <div>{success}</div>
+                            </div>
+                            <div className="flex-box">
+                                <div>{bridge_params.failure_label}:</div>
+                                <div>{failure}</div>
+                            </div>
+                            <div className="flex-box">
+                                <div>{bridge_params.pending_label}:</div>
+                                <div>{pending}</div>
+                            </div>
+                        </div>
+                        <div className="col-md-12 text-align-right">
+                            <button
+                                className="btn btn-primary"
+                                onClick={this.handleDownload}
+                                disabled={importStatus === config.IMPORT_STATUS.IMPORTING}>
+                                <span className="glyphicon glyphicon-cloud-download icon"></span>{bridge_params.download_label}
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div className="col-md-12 m-t-20">
                     <table className="table table-striped table-bordered">

@@ -133,7 +133,7 @@ class ImportTab extends React.Component {
     }
 
     onImport = async () => {
-        const { setErrorMessage, setTaskData, maxPage } = this.context;
+        const { setErrorMessage, setTaskData, maxPage, setResultSummary } = this.context;
         let errorMsg = '';
 
         try {
@@ -161,6 +161,7 @@ class ImportTab extends React.Component {
                     task.fullname = importRecords[idx].fullname;
                     task.type = importRecords[idx].status;
                 });
+                setResultSummary(json.count, 0, 0, json.count);
                 setTaskData(json.data.group_task_id, json.data.tasks);
             } else if (!json.is_available) {
                 if (json.celery_not_run) {

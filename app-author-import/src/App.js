@@ -28,6 +28,10 @@ class AuthorImport extends React.Component {
       maxPage: 0,
       importStatus: config.IMPORT_STATUS.NONE,
       isShowMessage: false,
+      total: 0,
+      success: 0, 
+      failure: 0, 
+      pending: 0,
       setStep: this.setStep,
       onChangeTab: this.onChangeTab,
       setErrorMessage: this.setErrorMessage,
@@ -36,6 +40,7 @@ class AuthorImport extends React.Component {
       setRecords: this.setRecords,
       setTaskData: this.setTaskData,
       setCurrentPage: this.setCurrentPage,
+      setResultSummary: this.setResultSummary,
     }
   }
 
@@ -56,6 +61,10 @@ class AuthorImport extends React.Component {
 
   setCurrentPage = (currentPage) => {
     this.setState({ currentPage });
+  };
+
+  setResultSummary = (total, success, failure, pending) => {
+    this.setState({ total, success, failure, pending });
   };
 
   onChangeTab = (tab) => {
@@ -158,7 +167,7 @@ class AuthorImport extends React.Component {
   onCheckImportStatus = async () => {
     return await new Promise(resolve => {
       const intervalCheckStatus = setInterval(async () => {
-        const { tasks, task_ids } = this.state;
+        const { tasks, task_ids, total } = this.state;
         let errorMsg = '';
         let isDone = true;
 
@@ -200,6 +209,10 @@ class AuthorImport extends React.Component {
                 errorMsg = bridge_params.import_fail_error;
               }
             }
+
+            const resultSummary = data.summary;
+            const pending = total - (data.summary.success_count + data.summary.failure_count);
+            this.setResultSummary(total, resultSummary.success_count, resultSummary.failure_count, pending);
             
             this.setState({
               tasks: _tasks,
