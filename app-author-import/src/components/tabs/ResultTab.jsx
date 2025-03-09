@@ -39,7 +39,9 @@ class ResultTab extends React.Component {
                 [bridge_params.no_label]: key + 1,
                 [bridge_params.start_date_label]: task.start_date ? task.start_date : '',
                 [bridge_params.end_date_label]: task.end_date ? task.end_date : '',
-                [bridge_params.weko_id_label]: task.record_id || '',
+                [bridge_params.pk_id_label]: task.record_id || '',
+                [bridge_params.previous_weko_id_label]:task.previous_weko_id,
+                [bridge_params.new_weko_id_label]:task.new_weko_id,
                 [bridge_params.name_label]: task.fullname.join('\n'),
                 [bridge_params.status_label]: this.prepareDisplayStatus(task.status, task.type, task.error_id)
             }
@@ -57,6 +59,8 @@ class ResultTab extends React.Component {
                     <td>{task.start_date ? task.start_date : ''}</td>
                     <td>{task.end_date ? task.end_date : ''}</td>
                     <td>{task.record_id || ''}</td>
+                    <td>{task.previous_weko_id || ''}</td>
+                    <td>{task.new_weko_id || ''}</td>
                     <td>
                         {
                             task.fullname.map(name => {
@@ -91,7 +95,9 @@ class ResultTab extends React.Component {
                                 <th>{bridge_params.no_label}</th>
                                 <th className="start_date"><p className="t_head">{bridge_params.start_date_label}</p></th>
                                 <th className="end_date"><p className="t_head ">{bridge_params.end_date_label}</p></th>
-                                <th>{bridge_params.weko_id_label}</th>
+                                <th>{bridge_params.pk_id_label}</th>
+                                <th>{bridge_params.previous_weko_id_label}</th>
+                                <th>{bridge_params.new_weko_id_label}</th>
                                 <th><p className="table-title-170">{bridge_params.name_label}</p></th>
                                 <th><p className="table-title-100">{bridge_params.status_label}</p></th>
                             </tr>

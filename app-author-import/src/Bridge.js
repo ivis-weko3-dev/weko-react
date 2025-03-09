@@ -4,13 +4,26 @@ export const import_label = document.getElementById("import").value;
 export const result_label = document.getElementById("result").value;
 export const download_label = document.getElementById("download").value;
 export const no_label = document.getElementById("no").value;
-export const weko_id_label = document.getElementById("weko_id").value;
+export const pk_id_label = document.getElementById("pk_id").value;
+export const current_weko_id_label = document.getElementById("current_weko_id").value;
+export const new_weko_id_label = document.getElementById("new_weko_id").value;
+export const previous_weko_id_label = document.getElementById("previous_weko_id").value;
 export const name_label = document.getElementById("name").value;
 
 // select
 export const select_file_label = document.getElementById("select_file").value;
 export const selected_file_name_label = document.getElementById("selected_file_name").value;
 export const next_label = document.getElementById("next").value;
+export const cancel_label = document.getElementById("cancel").value;
+
+export const force_change_mode_label = document.getElementById("force_change_mode").value;
+export const disclaimer_1_label = document.getElementById("disclaimer_1").value;
+export const disclaimer_2_label = document.getElementById("disclaimer_2").value;
+export const disclaimer_3_label = document.getElementById("disclaimer_3").value;
+export const disclaimer_4_label = document.getElementById("disclaimer_4").value;
+export const disclaimer_5_label = document.getElementById("disclaimer_5").value;
+export const disclaimer_6_label = document.getElementById("disclaimer_6").value;
+export const i_agree_label = document.getElementById("i_agree").value;
 
 // import
 export const summary = document.getElementById("summary").value;

@@ -27,7 +27,9 @@ class ImportTab extends React.Component {
 
             return {
                 [bridge_params.no_label]: key + 1,
-                [bridge_params.weko_id_label]: item.pk_id,
+                [bridge_params.pk_id_label]: item.pk_id,
+                [bridge_params.current_weko_id_label]: item.current_weko_id,
+                [bridge_params.new_weko_id_label]: item.weko_id,
                 [bridge_params.name_label]: item.fullname.join('\n'),
                 [bridge_params.mail_address_label]: mail,
                 [bridge_params.check_result_label]: (
@@ -77,6 +79,8 @@ class ImportTab extends React.Component {
                         {key + 1}
                     </td>
                     <td>{item.pk_id}</td>
+                    <td>{item.current_weko_id}</td>
+                    <td>{item.weko_id}</td>
                     <td>
                         {
                             item.fullname.map(name => {
@@ -120,7 +124,7 @@ class ImportTab extends React.Component {
     }
 
     onImport = async () => {
-        const { records, setErrorMessage, setTaskData } = this.context;
+        const { records, setErrorMessage, setTaskData, isAgree } = this.context;
         let errorMsg = '';
 
         try {
@@ -135,6 +139,7 @@ class ImportTab extends React.Component {
                     },
                     body: JSON.stringify({
                         group_task_id: importAuthorTaskId,
+                        force_change_mode: isAgree,
                         records: cleanDeep(importRecords.map(item => {
                             const newItem = _.cloneDeep(item);
                             delete newItem.fullname;
@@ -227,7 +232,9 @@ class ImportTab extends React.Component {
                             <thead>
                                 <tr>
                                     <th>{bridge_params.no_label}</th>
-                                    <th>{bridge_params.weko_id_label}</th>
+                                    <th>{bridge_params.pk_id_label}</th>
+                                    <th>{bridge_params.current_weko_id_label}</th>
+                                    <th>{bridge_params.new_weko_id_label}</th>
                                     <th><p className="table-title-170">{bridge_params.name_label}</p></th>
                                     <th><p className="table-title-170">{bridge_params.mail_address_label}</p></th>
                                     <th><p className="table-title-100">{bridge_params.check_result_label}</p></th>

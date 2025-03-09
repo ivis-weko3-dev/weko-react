@@ -2,6 +2,7 @@ import React from "react";
 
 import * as bridge_params from "../../Bridge";
 import * as config from "../../Config";
+import { Modal } from 'react-bootstrap';
 
 import { AppContext } from '../../Context';
 
@@ -14,10 +15,23 @@ class SelectTab extends React.Component {
         this.state = {
             file: null,
             fileName: "",
-            isChecking: false
+            isChecking: false,
+            isChecked: false,
+            showConfirmModal: false,
+            modalCheckbox: false,
         };
     }
+    setIsCheckedState = (bool) => {
+        this.setState({ isChecked: bool })
+    }
 
+    setModalState = (bool) => {
+        this.setState({ showConfirmModal: bool })
+    }
+
+    setModalCheckboxState = (bool) =>{
+        this.setState({ modalCheckbox: bool })
+    }
     getLastString = (path, code) => {
         const split_path = path.split(code);
         return split_path.pop();
@@ -42,8 +56,8 @@ class SelectTab extends React.Component {
     }
 
     onCheckImportFile = async () => {
-        const { setImportData, setErrorMessage } = this.context;
-        const { fileName, file } = this.state;
+        const { setImportData, setErrorMessage, setIsAgree } = this.context;
+        const { fileName, file, isChecked } = this.state;
         if (!file) {
             return;
         }
@@ -66,15 +80,35 @@ class SelectTab extends React.Component {
                 setErrorMessage(json.error);
             } else {
                 setImportData(json.list_import_data);
+                setIsAgree(isChecked)
             }
         } catch (error) {
             setErrorMessage(bridge_params.internal_server_error);
         }
         this.setState({ isChecking: false });
     }
+    handleCheckboxChange = (e) => {
+        if (e.target.checked) {
+            this.setIsCheckedState(e.target.checked);
+            this.setModalState(1);
+        } else {
+            this.setIsCheckedState(e.target.checked);
+        }
+    };
 
+    handleModalAction = (confirmed) => {
+        this.setModalState(0);
+        if (confirmed) {
+            this.setIsCheckedState(true);
+        }
+    };
+    handleModalClose = () => {
+        this.setModalState(0);
+        this.setIsCheckedState(false);
+        this.setModalCheckboxState(false);
+    };
     render() {
-        const { fileName, file, isChecking } = this.state;
+        const { fileName, file, isChecking, isChecked, showConfirmModal, modalCheckbox } = this.state;
         const { importStatus } = this.context;
         return (
             <div className="col-sm-12">
@@ -107,6 +141,16 @@ class SelectTab extends React.Component {
                             </div>
                         </div>
                         <div className="row">
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={this.handleCheckboxChange}
+                                />
+                                {bridge_params.force_change_mode_label}
+                            </label>
+                        </div>
+                        <div className="row">
                             <div className="col-md-2">
                                 <button
                                     className="btn btn-primary"
@@ -119,6 +163,54 @@ class SelectTab extends React.Component {
                         </div>
                     </div>
                 </div>
+                <Modal className="opacity1" show={showConfirmModal} onHide={this.handleModalClose} dialogClassName="w-725"
+                 centered>
+                    <Modal.Header closeButton>
+                        <Modal.Title className="in-line">{bridge_params.force_change_mode_label}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <div className="row modal-text">
+                            {bridge_params.disclaimer_1_label}
+                        </div>
+                        <div className="row modal-text">
+                            {bridge_params.disclaimer_2_label}
+                        </div>
+                        <div className="row modal-text">
+                            {bridge_params.disclaimer_3_label}
+                        </div>
+                        <div className="row modal-text">
+                            {bridge_params.disclaimer_4_label}
+                        </div>
+                        <div className="row modal-text">
+                            {bridge_params.disclaimer_5_label}
+                        </div>
+                        <div className="row modal-text">
+                            {bridge_params.disclaimer_6_label}
+                        </div>
+                        <div className="row modal-text" style={{ marginTop: '5px' }}>
+                            <label >
+                                <input
+                                    type="checkbox"
+                                    checked={modalCheckbox}
+                                    onChange={(e) => this.setModalCheckboxState(e.target.checked)}
+                                />
+                                {bridge_params.i_agree_label}
+                            </label>
+                        </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <div className="col-sm-12">
+                            <div className="row text-center">
+                                <button variant="primary" type="button" className="btn btn-default" onClick={() => this.handleModalAction(showConfirmModal === true )} disabled={!modalCheckbox}>
+                                    OK
+                                </button>
+                                <button variant="secondary" type="button" className="btn btn-default cancel" onClick={this.handleModalClose}>
+                                    {bridge_params.cancel_label}
+                                </button>
+                            </div>
+                        </div>
+                    </Modal.Footer>
+                </Modal>
             </div>
         );
     }

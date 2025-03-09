@@ -25,12 +25,14 @@ class AuthorImport extends React.Component {
       records: [],
       importStatus: config.IMPORT_STATUS.NONE,
       isShowMessage: false,
+      isAgree: false,
       setStep: this.setStep,
       onChangeTab: this.onChangeTab,
       setErrorMessage: this.setErrorMessage,
       isImportAvailable: this.isImportAvailable,
       setImportData: this.setImportData,
-      setTaskData: this.setTaskData
+      setTaskData: this.setTaskData,
+      setIsAgree: this.setIsAgree
     }
   }
 
@@ -57,6 +59,10 @@ class AuthorImport extends React.Component {
     this.setState({ errorMsg });
   };
 
+  setIsAgree =(isAgree) =>{
+    this.setState({isAgree})
+  }
+  
   setImportData = (records) => {
     const canImport = records.filter(item => {
       return !item.errors || item.errors.length === 0;
