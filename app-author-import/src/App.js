@@ -200,36 +200,54 @@ class AuthorImport extends React.Component {
           );
           const data = await response.json();
           if (data) {
-            const frontTask = data.tasks;
-            const _tasks = frontTask.map(taskInfo => {
-              const current_tasks = tasks.filter(task => task.task_id === taskInfo.task_id);
-              const current_task = current_tasks && current_tasks.length > 0 ? current_tasks[0] : false;
-              if (current_task) {
-                current_task.status = taskInfo.status;
-                current_task.start_date = taskInfo.start_date;
-                current_task.end_date = taskInfo.end_date;
-                current_task.error_id = taskInfo.error_id;
+            let _tasks;
+            if (isTarget === 'author_db') {
+              const frontTask = data.tasks;
+              _tasks = frontTask.map(taskInfo => {
+                const current_tasks = tasks.filter(task => task.task_id === taskInfo.task_id);
+                const current_task = current_tasks && current_tasks.length > 0 ? current_tasks[0] : false;
+                if (current_task) {
+                  current_task.status = taskInfo.status;
+                  current_task.start_date = taskInfo.start_date;
+                  current_task.end_date = taskInfo.end_date;
+                  current_task.error_id = taskInfo.error_id;
 
-                if (taskInfo.status === 'PENDING') {
+                  if (taskInfo.status === 'PENDING') {
+                    isDone = false;
+                  }
+                }
+                return current_task;
+              });
+              if (data.over_max){
+                const overMaxStatus = data.over_max.status
+                if(overMaxStatus === 'PENDING'){
                   isDone = false;
                 }
+                else if (overMaxStatus === 'FAILURE'){
+                  errorMsg = bridge_params.import_fail_error;
+                }
               }
-              return current_task;
-            });
-            if (data.over_max){
-              const overMaxStatus = data.over_max.status
-              if(overMaxStatus === 'PENDING'){
-                isDone = false;
-              }
-              else if (overMaxStatus === 'FAILURE'){
-                errorMsg = bridge_params.import_fail_error;
-              }
-            }
 
-            const resultSummary = data.summary;
-            const pending = total - (data.summary.success_count + data.summary.failure_count);
-            this.setResultSummary(total, resultSummary.success_count, resultSummary.failure_count, pending);
-            
+              const resultSummary = data.summary;
+              const pending = total - (data.summary.success_count + data.summary.failure_count);
+              this.setResultSummary(total, resultSummary.success_count, resultSummary.failure_count, pending);
+            } else {
+              _tasks = data.map(taskInfo => {
+                const current_tasks = tasks.filter(task => task.task_id === taskInfo.task_id);
+                const current_task = current_tasks && current_tasks.length > 0 ? current_tasks[0] : false;
+                if (current_task) {
+                  current_task.status = taskInfo.status;
+                  current_task.start_date = taskInfo.start_date;
+                  current_task.end_date = taskInfo.end_date;
+                  current_task.error_id = taskInfo.error_id;
+
+                  if (taskInfo.status === 'PENDING') {
+                    isDone = false;
+                  }
+                }
+                return current_task;
+              });
+            }
             this.setState({
               tasks: _tasks,
               importStatus: isDone ? config.IMPORT_STATUS.DONE : config.IMPORT_STATUS.IMPORTING

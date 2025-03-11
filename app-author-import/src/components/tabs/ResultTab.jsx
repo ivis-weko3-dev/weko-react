@@ -156,16 +156,16 @@ class ResultTab extends React.Component {
         let renderTable;
         if (isTarget === "author_db") {
             download_method = this.handleDownload;
-            columns.push(<th>{bridge_params.pk_id_label}</th>);
-            columns.push(<th>{bridge_params.previous_weko_id_label}</th>);
-            columns.push(<th>{bridge_params.new_weko_id_label}</th>);
-            columns.push(<th><p className="table-title-170">{bridge_params.name_label}</p></th>);
+            columns.push(bridge_params.pk_id_label);
+            columns.push(bridge_params.previous_weko_id_label);
+            columns.push(bridge_params.new_weko_id_label);
+            columns.push(bridge_params.name_label);
             renderTable = this.renderTableItem(tasks, recordNames);
         }else if(isTarget === "id_prefix" || isTarget === "affiliation_id"){
             download_method = this.handleDownloadForPrefix;
-            columns.push(<th>{bridge_params.scheme_label}</th>);
+            columns.push(bridge_params.scheme_label);
             columns.push(
-                <th><p className="table-title-170">{bridge_params.scheme_name_label}</p></th>
+                bridge_params.scheme_name_label
             );
             renderTable = this.renderTableItemForPrefix(tasks);
         }
@@ -174,25 +174,27 @@ class ResultTab extends React.Component {
             <div className="result_container row">
                 <div className="col-md-12 text-center">
                     <div className="row block-summary">
-                        <div className="col-lg-2 col-md-3 col-sm-3">
-                            <h3><b>{bridge_params.summary}</b></h3>
-                            <div className="flex-box">
-                                <div>{bridge_params.total_label}:</div>
-                                <div>{total}</div>
+                    　  {isTarget === "author_db" &&
+                            <div className="col-lg-2 col-md-3 col-sm-3">
+                                <h3><b>{bridge_params.summary}</b></h3>
+                                <div className="flex-box">
+                                    <div>{bridge_params.total_label}:</div>
+                                    <div>{total}</div>
+                                </div>
+                                <div className="flex-box">
+                                    <div>{bridge_params.success_label}:</div>
+                                    <div>{success}</div>
+                                </div>
+                                <div className="flex-box">
+                                    <div>{bridge_params.failure_label}:</div>
+                                    <div>{failure}</div>
+                                </div>
+                                <div className="flex-box">
+                                    <div>{bridge_params.pending_label}:</div>
+                                    <div>{pending}</div>
+                                </div>
                             </div>
-                            <div className="flex-box">
-                                <div>{bridge_params.success_label}:</div>
-                                <div>{success}</div>
-                            </div>
-                            <div className="flex-box">
-                                <div>{bridge_params.failure_label}:</div>
-                                <div>{failure}</div>
-                            </div>
-                            <div className="flex-box">
-                                <div>{bridge_params.pending_label}:</div>
-                                <div>{pending}</div>
-                            </div>
-                        </div>
+                        }
                         <div className="col-md-12 text-align-right">
                             <button
                                 className="btn btn-primary"
@@ -211,7 +213,7 @@ class ResultTab extends React.Component {
                                 <th className="start_date"><p className="t_head">{bridge_params.start_date_label}</p></th>
                                 <th className="end_date"><p className="t_head ">{bridge_params.end_date_label}</p></th>
                                 {columns.map((column, index) => (
-                                    {column}
+                                    <th>{column}</th>
                                 ))}
                                 <th><p className="table-title-100">{bridge_params.status_label}</p></th>
                             </tr>

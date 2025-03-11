@@ -64,6 +64,8 @@ class ImportTab extends React.Component {
         const numErrors = records.filter((item) => {
             return item.errors;
         }).length;
+
+        return { numTotal, numNews, numUpdates, numDeleteds, numErrors };
     }
 
     handleDownload = async() => {
@@ -281,17 +283,17 @@ class ImportTab extends React.Component {
         let renderTable;
         if (isTarget === "author_db") {
             download_method = this.handleDownload;
-            columns.push(<th>{bridge_params.pk_id_label}</th>);
-            columns.push(<th>{bridge_params.current_weko_id_label}</th>);
-            columns.push(<th>{bridge_params.new_weko_id_label}</th>);
-            columns.push(<th><p className="table-title-170">{bridge_params.name_label}</p></th>);
-            columns.push(<th><p className="table-title-170">{bridge_params.mail_address_label}</p></th>);
+            columns.push(bridge_params.pk_id_label);
+            columns.push(bridge_params.current_weko_id_label);
+            columns.push(bridge_params.new_weko_id_label);
+            columns.push(bridge_params.name_label);
+            columns.push(bridge_params.mail_address_label);
             renderTable = this.renderTableItem(records);
         }else if(isTarget === "id_prefix" || isTarget === "affiliation_id"){
             download_method = this.handleDownloadForPrefix;
-            columns.push(<th>{bridge_params.scheme_label}</th>);
-            columns.push(<th><p className="table-title-170">{bridge_params.scheme_name_label}</p></th>);
-            columns.push(<th><p className="table-title-170">{bridge_params.scheme_url_label}</p></th>);
+            columns.push(bridge_params.scheme_label);
+            columns.push(bridge_params.scheme_name_label);
+            columns.push(bridge_params.scheme_url_label);
             renderTable = this.renderTableItemForPrefix(records);
         }
         
@@ -351,7 +353,7 @@ class ImportTab extends React.Component {
                                 <tr>
                                     <th>{bridge_params.no_label}</th>
                                     {columns.map((column, index) => (
-                                        {column}
+                                        <th>{column}</th>
                                     ))}
                                     <th><p className="table-title-100">{bridge_params.check_result_label}</p></th>
                                 </tr>
@@ -361,11 +363,13 @@ class ImportTab extends React.Component {
                             </tbody>
                         </table>
                     </div>
-                    <Pagination
+                　  {isTarget === "author_db" &&
+                        <Pagination
                         currentPage={currentPage}
                         totalPages={maxPage}
                         onPageChange={this.handlePageChange}
-                    />
+                        />
+                    }
                 </div>
             </div>
         )

@@ -198,12 +198,13 @@ class SelectTab extends React.Component {
                                 </div>
                             </div>
                         </div>
-                        <div className="row" disabled={ isTarget !== "author_db" || !file}>
+                        <div className="row" >
                             <label>
                                 <input
                                     type="checkbox"
                                     checked={isChecked}
                                     onChange={this.handleCheckboxChange}
+                                    disabled={ isTarget !== "author_db" || !file}
                                 />
                                 {bridge_params.force_change_mode_label}
                             </label>
