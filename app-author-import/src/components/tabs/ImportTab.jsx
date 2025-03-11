@@ -274,7 +274,7 @@ class ImportTab extends React.Component {
     }
 
     render() {
-        const { records, importStatus, isTarget, counts, currentPage, maxPage } = this.context;
+        const { records, importStatus, isTarget, counts, currentPage, maxPage, isAgree } = this.context;
         const { numTotal, numNews, numUpdates, numDeleteds, numErrors } = 
             (isTarget === "author_db" ? this.summaryDataImport(counts) : this.summaryDataImportForPrefix(records));
 
@@ -300,6 +300,9 @@ class ImportTab extends React.Component {
         return (
             <div className="check-component">
                 <div className="row">
+                    {(isTarget === "author_db" && isAgree === true)&&
+                    <label style={{ color: 'red' }}>{bridge_params.force_change_mode_label}</label>
+                    }
                     <div className="col-md-12 text-center">
                         <button
                             className="btn btn-primary"
