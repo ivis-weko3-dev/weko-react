@@ -57,7 +57,9 @@ class ResultTab extends React.Component {
                     }),
                 }
             );
-            if (response.Result === "Dont need to create result file" && data) {
+
+            const json = await response.json();
+            if (json.Result === "Dont need to create result file" && data) {
                 JSONToCSVConvertor(data, 'Creator_List_Download_' + moment().format("YYYYDDMM"), true);
             } else if (response.ok) {
                 const blob = await response.blob();
@@ -112,7 +114,6 @@ class ResultTab extends React.Component {
                     <td>{start + key + 1}</td>
                     <td>{task.start_date ? task.start_date : ''}</td>
                     <td>{task.end_date ? task.end_date : ''}</td>
-                    <td>{task.record_id || ''}</td>
                     <td>{task.previous_weko_id || ''}</td>
                     <td>{task.new_weko_id || ''}</td>
                     <td>
@@ -156,7 +157,6 @@ class ResultTab extends React.Component {
         let renderTable;
         if (isTarget === "author_db") {
             download_method = this.handleDownload;
-            columns.push(bridge_params.pk_id_label);
             columns.push(bridge_params.previous_weko_id_label);
             columns.push(bridge_params.new_weko_id_label);
             columns.push(bridge_params.name_label);

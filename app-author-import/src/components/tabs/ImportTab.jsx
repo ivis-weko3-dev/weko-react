@@ -137,7 +137,6 @@ class ImportTab extends React.Component {
                     <td>
                         {key + 1 + (currentPage - 1) * config.IMPORT_RECORDS_PER_PAGE}
                     </td>
-                    <td>{item.pk_id}</td>
                     <td>{item.current_weko_id}</td>
                     <td>{item.weko_id}</td>
                     <td>
@@ -283,7 +282,6 @@ class ImportTab extends React.Component {
         let renderTable;
         if (isTarget === "author_db") {
             download_method = this.handleDownload;
-            columns.push(bridge_params.pk_id_label);
             columns.push(bridge_params.current_weko_id_label);
             columns.push(bridge_params.new_weko_id_label);
             columns.push(bridge_params.name_label);
