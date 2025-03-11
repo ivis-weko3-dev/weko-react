@@ -17,5 +17,7 @@ export const internal_server_error = document.getElementById("internal_server_er
 export const is_exporting_error = document.getElementById("is_exporting_error").value;
 export const is_exporting_other_device_error = document.getElementById("is_exporting_other_device_error").value;
 export const cancel_export_error = document.getElementById("cancel_export_error").value;
+export const export_url_label = document.getElementById("export_url_label").value;
+export const resume_label = document.getElementById("resume_label").value;
 
 export const entrypoints = JSON.parse(document.getElementById("export_authors_entrypoints").value);

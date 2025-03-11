@@ -24,6 +24,8 @@ export const TABS = [
     }
 ];
 
+export const IMPORT_RECORDS_PER_PAGE = 100;
+
 export const IMPORT_STATUS = {
     NONE: 0,
     PENDING: 1,
@@ -32,3 +34,5 @@ export const IMPORT_STATUS = {
 };
 
 export const IMPORT_AUTHOR_TASK_ID_KEY = 'import_author_task_id';
+
+export const PAGE_SIZE = 100;

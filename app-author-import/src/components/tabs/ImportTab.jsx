@@ -5,6 +5,7 @@ import cleanDeep from "clean-deep";
 
 import * as bridge_params from "../../Bridge";
 import * as config from "../../Config";
+import { prepareDisplayName } from "../../Common";
 
 import { AppContext } from '../../Context';
 import { cleanArrayData, JSONToCSVConvertor } from "../../Common";
@@ -12,49 +13,88 @@ import { cleanArrayData, JSONToCSVConvertor } from "../../Common";
 class ImportTab extends React.Component {
     static contextType = AppContext;
 
-    handleDownload = () => {
-        const { records } = this.context;
-        const data = records.map((item, key) => {
-            const mail = item.emailInfo ? cleanArrayData(item.emailInfo.map((email) => {
-                return email.email;
-            })).join('\n') : '';
-            const error = item.errors ? item.errors.map(e => {
-                return bridge_params.error_label + ': ' + e;
-            }).join('\n').replace('<br/>', '\n') : '';
-            const warning = item.warnings ? item.warnings.map(e => {
-                return bridge_params.warning_label + ': ' + e;
-            }).join('\n').replace('<br/>', '\n') : '';
-
-            return {
-                [bridge_params.no_label]: key + 1,
-                [bridge_params.pk_id_label]: item.pk_id,
-                [bridge_params.current_weko_id_label]: item.current_weko_id,
-                [bridge_params.new_weko_id_label]: item.weko_id,
-                [bridge_params.name_label]: item.fullname.join('\n'),
-                [bridge_params.mail_address_label]: mail,
-                [bridge_params.check_result_label]: (
-                    (
-                        item.errors ?
-                            error
-                            : (item.status === 'new' ?
-                                bridge_params.register_label
-                                : (item.status === 'update' ?
-                                    bridge_params.update_label
-                                    : (item.status === 'deleted' ? bridge_params.deleted_label : '')
-                                )
-                            )
-                    ) + (warning ? '\n' : '') + (warning)
-                )
-            }
-        });
-
-        if (data) {
-            JSONToCSVConvertor(data, 'Creator_Check_' + moment().format("YYYYDDMM"), true);
+    handlePageChange = async(pageNumber) => {
+        // ページ変更時の処理をここに追加
+        const { setRecords, setErrorMessage, setCurrentPage } = this.context;
+        if (!pageNumber) {
+            return;
         }
+        try {
+            const response = await fetch(
+                `${bridge_params.entrypoints.check_pagination}?page_number=${pageNumber}`,
+                {
+                    method: "GET",
+                    headers: { 'Content-Type': 'application/json' },
+                }
+            );
+            const json = await response.json();
+            if (json.error) {
+                setErrorMessage(json.error);
+            } else {
+                setCurrentPage(pageNumber);
+                setRecords(json);
+                window.scrollTo(0, 0);
+            }
+        } catch (error) {
+            setErrorMessage(bridge_params.internal_server_error);
+        }
+    };
+
+    summaryDataImport = (counts) => {
+        const numTotal = counts.num_total;
+        const numNews = counts.num_new;
+        const numUpdates = counts.num_update;
+        const numDeleteds = counts.num_delete;
+        const numErrors = counts.num_error;
+
+        return { numTotal, numNews, numUpdates, numDeleteds, numErrors };
     }
 
+    summaryDataImportForPrefix = (records) => {
+        const numTotal = records.length;
+        const numNews = records.filter((item) => {
+            return item.status === 'new' && !item.errors;
+        }).length;
+        const numUpdates = records.filter((item) => {
+            return item.status === 'update' && !item.errors;
+        }).length;
+        const numDeleteds = records.filter((item) => {
+            return item.status === 'deleted' && !item.errors;
+        }).length;
+        const numErrors = records.filter((item) => {
+            return item.errors;
+        }).length;
+    }
+
+    handleDownload = async() => {
+        const {setErrorMessage, maxPage} = this.context;
+        try {
+            const response = await fetch(
+                bridge_params.entrypoints.check_file_download,
+                {
+                    method: "POST",
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        max_page:maxPage 
+                    }),
+                }
+            );
+            if (response.ok){
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Creator_Check_' + moment().format("YYYYMMDDhhmm") + '.tsv';
+                a.click();
+                window.URL.revokeObjectURL(url);
+            }
+        } catch (error) {
+            setErrorMessage(bridge_params.internal_server_error);
+        }
+    };
+
     handleDownloadForPrefix = () => {
-        const { records } = this.context;
+        const { records, isTarget } = this.context;
         const data = records.map((item, key) => {
             const error = item.errors ? item.errors.map(e => {
                 return bridge_params.error_label + ': ' + e;
@@ -80,37 +120,20 @@ class ImportTab extends React.Component {
                 )
             }
         });
-
         if (data) {
-            JSONToCSVConvertor(data, 'Creator_Check_' + moment().format("YYYYDDMM"), true);
+            const target = isTarget === "Id_Prefix" ? "ID_Prefix" : "Affiliation_Id";
+            JSONToCSVConvertor(data, target +'_Check_' + moment().format("YYYYDDMM"), true);
         }
-
     }
 
-    summaryDataImport = (records) => {
-        const numTotal = records.length;
-        const numNews = records.filter((item) => {
-            return item.status === 'new' && !item.errors;
-        }).length;
-        const numUpdates = records.filter((item) => {
-            return item.status === 'update' && !item.errors;
-        }).length;
-        const numDeleteds = records.filter((item) => {
-            return item.status === 'deleted' && !item.errors;
-        }).length;
-        const numErrors = records.filter((item) => {
-            return item.errors;
-        }).length;
-
-        return { numTotal, numNews, numUpdates, numDeleteds, numErrors };
-    }
 
     renderTableItem = (records) => {
+        const { currentPage } = this.context;
         return records.map((item, key) => {
             return (
                 <tr key={key}>
                     <td>
-                        {key + 1}
+                        {key + 1 + (currentPage - 1) * config.IMPORT_RECORDS_PER_PAGE}
                     </td>
                     <td>{item.pk_id}</td>
                     <td>{item.current_weko_id}</td>
@@ -192,7 +215,7 @@ class ImportTab extends React.Component {
     }
 
     onImport = async () => {
-        const { records, setErrorMessage, setTaskData, isTarget, isAgree } = this.context;
+        const { records, setErrorMessage, setTaskData, isTarget, isAgree, maxPage, setResultSummary } = this.context;
         let errorMsg = '';
 
         try {
@@ -214,16 +237,22 @@ class ImportTab extends React.Component {
                             delete newItem.warnings;
                             return newItem;
                         })),
-                        isTarget: isTarget
+                        isTarget: isTarget,
+                        max_page: maxPage,
                     })
                 }
             );
             const json = await response.json();
             if (json.data) {
+                const importRecords = json.records;
                 json.data.tasks.forEach((task, idx) => {
+                    importRecords.forEach(record => {
+                      record.fullname = prepareDisplayName(record.authorNameInfo);
+                    });
                     task.fullname = importRecords[idx].fullname;
                     task.type = importRecords[idx].status;
                 });
+                setResultSummary(json.count, 0, 0, json.count);
                 setTaskData(json.data.group_task_id, json.data.tasks);
             } else if (!json.is_available) {
                 if (json.celery_not_run) {
@@ -243,8 +272,9 @@ class ImportTab extends React.Component {
     }
 
     render() {
-        const { records, importStatus, isTarget } = this.context;
-        const { numTotal, numNews, numUpdates, numDeleteds, numErrors } = this.summaryDataImport(records);
+        const { records, importStatus, isTarget, counts, currentPage, maxPage } = this.context;
+        const { numTotal, numNews, numUpdates, numDeleteds, numErrors } = 
+            (isTarget === "author_db" ? this.summaryDataImport(counts) : this.summaryDataImportForPrefix(records));
 
         let download_method;
         let columns=[];
@@ -331,9 +361,52 @@ class ImportTab extends React.Component {
                             </tbody>
                         </table>
                     </div>
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={maxPage}
+                        onPageChange={this.handlePageChange}
+                    />
                 </div>
             </div>
         )
+    }
+}
+
+class Pagination extends React.Component {
+    render() {
+        const { currentPage, totalPages, onPageChange } = this.props;
+
+        const pageNumbers = [];
+        const startPage = Math.max(1, currentPage - 5);
+        const endPage = Math.min(totalPages, currentPage + 4);
+
+        for (let i = startPage; i <= endPage; i++) {
+            pageNumbers.push(i);
+        }
+
+        return (
+            <div className="col-sm-12 col-md-12 alignCenter">
+                <ul className="pagination">
+                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                        <a onClick={() => onPageChange(currentPage - 1)} className="page-link">
+                            &lt;
+                        </a>
+                    </li>
+                    {pageNumbers.map(number => (
+                        <li key={number} className={`page-item ${number === currentPage ? 'active' : ''}`}>
+                            <a onClick={() => onPageChange(number)} className="page-link">
+                                {number}
+                            </a>
+                        </li>
+                    ))}
+                    <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                        <a onClick={() => onPageChange(currentPage + 1)} className="page-link">
+                            &gt;
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        );
     }
 }
 

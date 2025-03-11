@@ -19,6 +19,7 @@ class AuthorExport extends React.Component {
       isChecking: false,
       isExporting: false,
       isTarget:"author_db",
+      isStopping: false,
       errorMsg: '',
       taskId: localStorage.getItem('authors_export_id'),
       downloadLink: '',
@@ -68,7 +69,8 @@ class AuthorExport extends React.Component {
       const json = await response.json();
       if (json.data && json.data.status === 'success') {
         this.setState({
-          isExporting: false
+          isExporting: false,
+          isStopping: false
         });
       } else {
         this.setState({
@@ -115,6 +117,40 @@ class AuthorExport extends React.Component {
     }
   }
 
+  onResume = async () => {
+    this.setState({isStopping: false})
+    const check = await this.checkExportStatus(false, true);
+    if (!check) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        bridge_params.entrypoints.resume,
+        {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ isTarget: this.state.isTarget })
+        }
+      );
+      const json = await response.json();
+      if (json.data) {
+        this.setState({
+          taskId: json.data.task_id
+        });
+        localStorage.setItem('authors_export_id', json.data.task_id);
+        this.checkExportStatus(true);
+      }
+    } catch (error) {
+      this.setState({
+        isExporting: false,
+        errorMsg: bridge_params.internal_server_error
+      });
+    }
+  }
+
   checkExportStatus = async (repeat = false, isCheckBeforeExport = false) => {
     this.setState({ isChecking: true });
     return await new Promise(resolve => {
@@ -126,9 +162,12 @@ class AuthorExport extends React.Component {
           const json = await response.json();
           if (json.data) {
             const data = json.data;
-            if (data.task_id && taskId === data.task_id) {
+            if (data.task_id && taskId === data.task_id){
               result.isExporting = true;
               repeat = true;
+            } else if (data.stop_point) {
+              result.isStopping = true;
+              repeat = false;
             } else if (data.task_id) {
               result.errorMsg = bridge_params.is_exporting_other_device_error;
             } else if (data.error) {
@@ -154,6 +193,10 @@ class AuthorExport extends React.Component {
 
         if (isCheckBeforeExport) {
           this.setState({ isExporting: true });
+          this.setState({ isStopping: false});
+        } else if (result.isStopping){
+          this.setState({ isStopping: true});
+          this.setState({ isExporting: false });
         }
 
         if (!repeat || result.errorMsg) {
@@ -174,7 +217,7 @@ class AuthorExport extends React.Component {
   }
 
   render() {
-    const { errorMsg, downloadLink, filename, isExporting, isChecking, isTarget,
+    const { errorMsg, downloadLink, filename, isExporting, isChecking, isTarget, isStopping,
       showConfirmModal, confirmMessage
     } = this.state;
     let downloadUrlLabel;
@@ -198,7 +241,34 @@ class AuthorExport extends React.Component {
       correctDownloadLink = downloadLink;
       fileNameLabel = filename;
     }
-
+    
+    let exportButton;
+    if (isExporting ) {
+      exportButton = (
+        <button disabled type="button" className="btn btn-primary margin">
+            <div className="loading" />
+            {bridge_params.export_label}
+        </button>
+      );
+    } else if (isChecking) {
+      exportButton = (
+        <button disabled type="button" className="btn btn-primary margin">
+          <div className="loading" /> {bridge_params.export_label}
+        </button>
+      );
+    } else if (isStopping){
+      exportButton = (
+        <button type="button" className="btn btn-primary margin" onClick={this.onResume}>
+          {bridge_params.resume_label}
+        </button>
+      )
+    } else {
+      exportButton = (
+        <button type="button" className="btn btn-primary margin" onClick={() => this.onConfirm(true)}>
+          {bridge_params.export_label}
+        </button>
+      );
+    }
     return (
       <>
         <div className="col-sm-12">
@@ -227,11 +297,8 @@ class AuthorExport extends React.Component {
           </div>
           <div className="row">
             <div className="col-sm-12 text-center">
-              <button disabled={isExporting || isChecking} type="button" className="btn btn-primary margin" onClick={() => this.onConfirm(true)}>
-                {isExporting || isChecking ? <div className="loading" /> : <></>}
-                {bridge_params.export_label}
-              </button>
-              <button disabled={!isExporting} type="button" className="btn btn-primary margin cancel" onClick={() => this.onConfirm(false)}>
+            {exportButton}
+              <button disabled={!isExporting && !isStopping} type="button" className="btn btn-primary margin cancel" onClick={() => this.onConfirm(false)}>
                 {bridge_params.cancel_label}
               </button>
             </div>

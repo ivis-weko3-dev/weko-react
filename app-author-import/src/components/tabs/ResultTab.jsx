@@ -46,10 +46,42 @@ class ResultTab extends React.Component {
                 [bridge_params.status_label]: this.prepareDisplayStatus(task.status, task.type, task.error_id)
             }
         })
-        if (data) {
-            JSONToCSVConvertor(data, 'Creator_List_Download_' + moment().format("YYYYDDMM"), true);
+        try {
+            const response = await fetch(
+                bridge_params.entrypoints.result_download,
+                {
+                    method: "POST",
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        json: data
+                    }),
+                }
+            );
+            if (response.Result === "Dont need to create result file" && data) {
+                JSONToCSVConvertor(data, 'Creator_List_Download_' + moment().format("YYYYDDMM"), true);
+            } else if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Creator_List_Download_' + moment().format("YYYYMMDDhhmm") + '.tsv';
+                a.click();
+                window.URL.revokeObjectURL(url);
+            }
+        } catch (error) {
+            console.log(error);
         }
     }
+    handlePageChange = async (pageNumber) => {
+        const { maxPage, setErrorMessage, setCurrentPage } = this.context;
+        if (!pageNumber) {
+            return;
+        }
+        if (pageNumber < 1 || pageNumber > maxPage) {
+            return;
+        }
+        setCurrentPage(pageNumber);
+    };
 
     handleDownloadForPrefix = async () => {
         const { tasks, isTarget } = this.context;
@@ -70,10 +102,14 @@ class ResultTab extends React.Component {
     }
 
     renderTableItem = (tasks) => {
+        const { currentPage } = this.context;
+        const start = (currentPage - 1) * config.PAGE_SIZE;
+        const end = currentPage * config.PAGE_SIZE;
+        tasks = tasks.slice(start, end);
         return tasks.map((task, key) => {
             return (
                 <tr key={key}>
-                    <td>{key + 1}</td>
+                    <td>{start + key + 1}</td>
                     <td>{task.start_date ? task.start_date : ''}</td>
                     <td>{task.end_date ? task.end_date : ''}</td>
                     <td>{task.record_id || ''}</td>
@@ -112,7 +148,8 @@ class ResultTab extends React.Component {
     };
 
     render() {
-        const { tasks, recordNames, importStatus, isTarget } = this.context;
+        const { tasks, recordNames, importStatus, isTarget, currentPage, maxPage,
+            total, success, failure, pending  } = this.context;
 
         let download_method;
         let columns=[];
@@ -135,13 +172,36 @@ class ResultTab extends React.Component {
 
         return (
             <div className="result_container row">
-                <div className="col-md-12 text-align-right">
-                    <button
-                        className="btn btn-primary"
-                        onClick={download_method}
-                        disabled={importStatus === config.IMPORT_STATUS.IMPORTING}>
-                        <span className="glyphicon glyphicon-cloud-download icon"></span>{bridge_params.download_label}
-                    </button>
+                <div className="col-md-12 text-center">
+                    <div className="row block-summary">
+                        <div className="col-lg-2 col-md-3 col-sm-3">
+                            <h3><b>{bridge_params.summary}</b></h3>
+                            <div className="flex-box">
+                                <div>{bridge_params.total_label}:</div>
+                                <div>{total}</div>
+                            </div>
+                            <div className="flex-box">
+                                <div>{bridge_params.success_label}:</div>
+                                <div>{success}</div>
+                            </div>
+                            <div className="flex-box">
+                                <div>{bridge_params.failure_label}:</div>
+                                <div>{failure}</div>
+                            </div>
+                            <div className="flex-box">
+                                <div>{bridge_params.pending_label}:</div>
+                                <div>{pending}</div>
+                            </div>
+                        </div>
+                        <div className="col-md-12 text-align-right">
+                            <button
+                                className="btn btn-primary"
+                                onClick={download_method}
+                                disabled={importStatus === config.IMPORT_STATUS.IMPORTING}>
+                                <span className="glyphicon glyphicon-cloud-download icon"></span>{bridge_params.download_label}
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div className="col-md-12 m-t-20">
                     <table className="table table-striped table-bordered">
@@ -160,10 +220,56 @@ class ResultTab extends React.Component {
                             {renderTable}
                         </tbody>
                     </table>
+                    <div>
+                    　{isTarget === "author_db" &&
+                            <Pagination
+                            currentPage={currentPage}
+                            totalPages={maxPage}
+                            onPageChange={this.handlePageChange}
+                            />
+                        }
+                    </div>
                 </div>
             </div>
         )
     }
 }
 
+class Pagination extends React.Component {
+    render() {
+        const { currentPage, totalPages, onPageChange } = this.props;
+
+        const pageNumbers = [];
+        const startPage = Math.max(1, currentPage - 5);
+        const endPage = Math.min(totalPages, currentPage + 4);
+
+        for (let i = startPage; i <= endPage; i++) {
+            pageNumbers.push(i);
+        }
+
+        return (
+            <div className="col-sm-12 col-md-12 alignCenter">
+                <ul className="pagination">
+                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                        <a onClick={() => onPageChange(currentPage - 1)} className="page-link">
+                            &lt;
+                        </a>
+                    </li>
+                    {pageNumbers.map(number => (
+                        <li key={number} className={`page-item ${number === currentPage ? 'active' : ''}`}>
+                            <a onClick={() => onPageChange(number)} className="page-link">
+                                {number}
+                            </a>
+                        </li>
+                    ))}
+                    <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                        <a onClick={() => onPageChange(currentPage + 1)} className="page-link">
+                            &gt;
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        );
+    }
+}
 export default ResultTab;
