@@ -53,6 +53,40 @@ class ImportTab extends React.Component {
         }
     }
 
+    handleDownloadForPrefix = () => {
+        const { records } = this.context;
+        const data = records.map((item, key) => {
+            const error = item.errors ? item.errors.map(e => {
+                return bridge_params.error_label + ': ' + e;
+            }).join('\n').replace('<br/>', '\n') : '';
+
+            return {
+                [bridge_params.no_label]: key + 1,
+                [bridge_params.scheme_label]: item.scheme,
+                [bridge_params.scheme_name_label]: item.name,
+                [bridge_params.scheme_url_label]: item.url,
+                [bridge_params.check_result_label]: (
+                    (
+                        item.errors ?
+                            error
+                            : (item.status === 'new' ?
+                                bridge_params.register_label
+                                : (item.status === 'update' ?
+                                    bridge_params.update_label
+                                    : (item.status === 'deleted' ? bridge_params.deleted_label : '')
+                                )
+                            )
+                    )
+                )
+            }
+        });
+
+        if (data) {
+            JSONToCSVConvertor(data, 'Creator_Check_' + moment().format("YYYYDDMM"), true);
+        }
+
+    }
+
     summaryDataImport = (records) => {
         const numTotal = records.length;
         const numNews = records.filter((item) => {
@@ -123,8 +157,42 @@ class ImportTab extends React.Component {
         });
     }
 
+    renderTableItemForPrefix = (records) => {
+        return records.map((item, key) => {
+            return (
+                <tr key={key}>
+                    <td>
+                        {key + 1}
+                    </td>
+                    <td>{item.scheme}</td>
+                    <td>
+                        {item.name}
+                    </td>
+                    <td>
+                        {item.url}
+                    </td>
+                    <td>
+                        {
+                            item['errors'] ?
+                                item['errors'].map(e => {
+                                    return <div dangerouslySetInnerHTML={{ __html: bridge_params.error_label + ': ' + e }} />
+                                })
+                                : (item.status === 'new' ?
+                                    bridge_params.register_label
+                                    : (item.status === 'update' ?
+                                        bridge_params.update_label
+                                        : (item.status === 'deleted' ? bridge_params.deleted_label : '')
+                                    )
+                                )
+                        }
+                    </td>
+                </tr>
+            )
+        });
+    }
+
     onImport = async () => {
-        const { records, setErrorMessage, setTaskData, isAgree } = this.context;
+        const { records, setErrorMessage, setTaskData, isTarget, isAgree } = this.context;
         let errorMsg = '';
 
         try {
@@ -145,7 +213,8 @@ class ImportTab extends React.Component {
                             delete newItem.fullname;
                             delete newItem.warnings;
                             return newItem;
-                        }))
+                        })),
+                        isTarget: isTarget
                     })
                 }
             );
@@ -174,9 +243,43 @@ class ImportTab extends React.Component {
     }
 
     render() {
-        const { records, importStatus } = this.context;
+        const { records, importStatus, isTarget } = this.context;
         const { numTotal, numNews, numUpdates, numDeleteds, numErrors } = this.summaryDataImport(records);
 
+        let download_method;
+        let columns=[];
+        let renderTable;
+        if (isTarget === "author_db") {
+            download_method = this.handleDownload;
+            columns.push(<th>{bridge_params.pk_id_label}</th>);
+            columns.push(<th>{bridge_params.previous_weko_id_label}</th>);
+            columns.push(<th>{bridge_params.new_weko_id_label}</th>);
+            columns.push(<th><p className="table-title-170">{bridge_params.name_label}</p></th>);
+            renderTable = this.renderTableItem(tasks, recordNames);
+        }else if(isTarget === "id_prefix" || isTarget === "affiliation_id"){
+            download_method = this.handleDownloadForPrefix;
+            columns.push(<th>{bridge_params.scheme_label}</th>);
+            columns.push(
+                <th><p className="table-title-170">{bridge_params.scheme_name_label}</p></th>
+            );
+            renderTable = this.renderTableItemForPrefix(tasks);
+        }
+        if (isTarget === "author_db") {
+            download_method = this.handleDownload;
+            columns.push(<th>{bridge_params.pk_id_label}</th>);
+            columns.push(<th>{bridge_params.current_weko_id_label}</th>);
+            columns.push(<th>{bridge_params.new_weko_id_label}</th>);
+            columns.push(<th><p className="table-title-170">{bridge_params.name_label}</p></th>);
+            columns.push(<th><p className="table-title-170">{bridge_params.mail_address_label}</p></th>);
+            renderTable = this.renderTableItem(records);
+        }else if(isTarget === "id_prefix" || isTarget === "affiliation_id"){
+            download_method = this.handleDownloadForPrefix;
+            columns.push(<th>{bridge_params.scheme_label}</th>);
+            columns.push(<th><p className="table-title-170">{bridge_params.scheme_name_label}</p></th>);
+            columns.push(<th><p className="table-title-170">{bridge_params.scheme_url_label}</p></th>);
+            renderTable = this.renderTableItemForPrefix(records);
+        }
+        
         return (
             <div className="check-component">
                 <div className="row">
@@ -221,7 +324,7 @@ class ImportTab extends React.Component {
                             <div className="col-lg-10 col-md-9 text-align-right">
                                 <button
                                     className="btn btn-primary"
-                                    onClick={this.handleDownload}>
+                                    onClick={download_method}>
                                     <span className="glyphicon glyphicon-cloud-download icon"></span>{bridge_params.download_label}
                                 </button>
                             </div>
@@ -232,16 +335,14 @@ class ImportTab extends React.Component {
                             <thead>
                                 <tr>
                                     <th>{bridge_params.no_label}</th>
-                                    <th>{bridge_params.pk_id_label}</th>
-                                    <th>{bridge_params.current_weko_id_label}</th>
-                                    <th>{bridge_params.new_weko_id_label}</th>
-                                    <th><p className="table-title-170">{bridge_params.name_label}</p></th>
-                                    <th><p className="table-title-170">{bridge_params.mail_address_label}</p></th>
+                                    {columns.map((column, index) => (
+                                        {column}
+                                    ))}
                                     <th><p className="table-title-100">{bridge_params.check_result_label}</p></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {this.renderTableItem(records)}
+                                {renderTable}
                             </tbody>
                         </table>
                     </div>

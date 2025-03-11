@@ -26,9 +26,18 @@
 .modal-dialog {
   margin-top: 130px !important;
 }
+
 .modal-text {
   padding-left: 20px;
   padding-left: 20px;
+}
+
+.margin{
+  margin-left: 15%;
+}
+
+.width-10percent {
+  width: 10%;
 }
 
 .opacity1 {

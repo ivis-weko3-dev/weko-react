@@ -24,6 +24,10 @@ export const disclaimer_4_label = document.getElementById("disclaimer_4").value;
 export const disclaimer_5_label = document.getElementById("disclaimer_5").value;
 export const disclaimer_6_label = document.getElementById("disclaimer_6").value;
 export const i_agree_label = document.getElementById("i_agree").value;
+export const import_target = document.getElementById("import_target").value;
+export const author_db_label = document.getElementById("author_db_label").value;
+export const id_prefix_label = document.getElementById("id_prefix_label").value;
+export const affiliation_id_label = document.getElementById("affiliation_id_label").value;
 
 // import
 export const summary = document.getElementById("summary").value;
@@ -34,6 +38,9 @@ export const delete_creator_label = document.getElementById("delete_creator").va
 export const result_error_label = document.getElementById("check_error").value;
 export const mail_address_label = document.getElementById("mail_address").value;
 export const check_result_label = document.getElementById("check_result").value;
+export const scheme_label = document.getElementById("scheme").value;
+export const scheme_name_label = document.getElementById("scheme_name").value;
+export const scheme_url_label = document.getElementById("scheme_url").value;
 
 // result
 export const start_date_label = document.getElementById("start_date").value;
@@ -52,6 +59,7 @@ export const update_label = document.getElementById("update").value;
 export const deleted_label = document.getElementById("deleted").value;
 
 //error
+export const different_format_file_for_target = document.getElementById("different_format_file_for_target").value;
 export const internal_server_error = document.getElementById("internal_server_error").value;
 export const celery_not_run = document.getElementById("celery_not_run").value;
 export const not_available_error = document.getElementById("not_available_error").value;
