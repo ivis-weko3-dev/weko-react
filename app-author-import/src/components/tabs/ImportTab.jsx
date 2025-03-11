@@ -252,21 +252,6 @@ class ImportTab extends React.Component {
         if (isTarget === "author_db") {
             download_method = this.handleDownload;
             columns.push(<th>{bridge_params.pk_id_label}</th>);
-            columns.push(<th>{bridge_params.previous_weko_id_label}</th>);
-            columns.push(<th>{bridge_params.new_weko_id_label}</th>);
-            columns.push(<th><p className="table-title-170">{bridge_params.name_label}</p></th>);
-            renderTable = this.renderTableItem(tasks, recordNames);
-        }else if(isTarget === "id_prefix" || isTarget === "affiliation_id"){
-            download_method = this.handleDownloadForPrefix;
-            columns.push(<th>{bridge_params.scheme_label}</th>);
-            columns.push(
-                <th><p className="table-title-170">{bridge_params.scheme_name_label}</p></th>
-            );
-            renderTable = this.renderTableItemForPrefix(tasks);
-        }
-        if (isTarget === "author_db") {
-            download_method = this.handleDownload;
-            columns.push(<th>{bridge_params.pk_id_label}</th>);
             columns.push(<th>{bridge_params.current_weko_id_label}</th>);
             columns.push(<th>{bridge_params.new_weko_id_label}</th>);
             columns.push(<th><p className="table-title-170">{bridge_params.name_label}</p></th>);
