@@ -18,7 +18,7 @@ class AuthorExport extends React.Component {
       confirmMessage: '',
       isChecking: false,
       isExporting: false,
-      isTarget:"author_db",
+      isTarget: "author_db",
       isStopping: false,
       errorMsg: '',
       taskId: localStorage.getItem('authors_export_id'),
@@ -42,9 +42,7 @@ class AuthorExport extends React.Component {
   }
 
   onChangeTarget = (e) => {
-    this.setState({
-      isTarget: e.target.value
-    });
+    this.setState({isTarget: e.target.value});
   }
 
   onConfirm = (isExport) => {
@@ -103,9 +101,7 @@ class AuthorExport extends React.Component {
       );
       const json = await response.json();
       if (json.data) {
-        this.setState({
-          taskId: json.data.task_id
-        });
+        this.setState({taskId: json.data.task_id});
         localStorage.setItem('authors_export_id', json.data.task_id);
         this.checkExportStatus(true);
       }
@@ -137,9 +133,7 @@ class AuthorExport extends React.Component {
       );
       const json = await response.json();
       if (json.data) {
-        this.setState({
-          taskId: json.data.task_id
-        });
+        this.setState({taskId: json.data.task_id});
         localStorage.setItem('authors_export_id', json.data.task_id);
         this.checkExportStatus(true);
       }
@@ -192,11 +186,15 @@ class AuthorExport extends React.Component {
         }
 
         if (isCheckBeforeExport) {
-          this.setState({ isExporting: true });
-          this.setState({ isStopping: false});
+          this.setState({ 
+            isExporting: true ,
+            isStopping: false
+          });
         } else if (result.isStopping){
-          this.setState({ isStopping: true});
-          this.setState({ isExporting: false });
+          this.setState({ 
+            isStopping: true,
+            isExporting: false
+          });
         }
 
         if (!repeat || result.errorMsg) {
@@ -211,9 +209,7 @@ class AuthorExport extends React.Component {
   }
 
   onClose = () => {
-    this.setState({
-      showConfirmModal: -1
-    });
+    this.setState({showConfirmModal: -1});
   }
 
   render() {
@@ -246,8 +242,8 @@ class AuthorExport extends React.Component {
     if (isExporting ) {
       exportButton = (
         <button disabled type="button" className="btn btn-primary margin">
-            <div className="loading" />
-            {bridge_params.export_label}
+          <div className="loading" />
+          {bridge_params.export_label}
         </button>
       );
     } else if (isChecking) {
@@ -297,7 +293,7 @@ class AuthorExport extends React.Component {
           </div>
           <div className="row">
             <div className="col-sm-12 text-center">
-            {exportButton}
+              {exportButton}
               <button disabled={!isExporting && !isStopping} type="button" className="btn btn-primary margin cancel" onClick={() => this.onConfirm(false)}>
                 {bridge_params.cancel_label}
               </button>
@@ -316,7 +312,7 @@ class AuthorExport extends React.Component {
               </a>
             </div>
           </div>
-        </div >
+        </div>
         <ConfirmModal show={showConfirmModal} confirmMessage={confirmMessage} onAction={this.onAction} onClose={this.onClose} />
       </>
     )
