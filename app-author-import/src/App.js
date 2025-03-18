@@ -101,7 +101,7 @@ class AuthorImport extends React.Component {
     let canImport
     records = records.list_import_data;
 
-    if (Object.keys(obj).length === 0){
+    if (Object.keys(counts).length === 0){
       canImport = records.filter(item => {
         return !item.errors || item.errors.length === 0;
       }).length > 0;
