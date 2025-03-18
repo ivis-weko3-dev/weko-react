@@ -99,9 +99,7 @@ class AuthorImport extends React.Component {
     let counts = records.counts||{};
     let maxPage = records.max_page;
     records = records.list_import_data;
-    const canImport = records.filter(item => {
-      return !item.errors || item.errors.length === 0;
-    }).length > 0;
+    const canImport = !(counts.num_error === counts.num_total)
 
     records.forEach(record => {
       record.fullname = prepareDisplayName(record.authorNameInfo);
