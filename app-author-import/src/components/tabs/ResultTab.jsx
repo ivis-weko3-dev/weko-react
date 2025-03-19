@@ -58,11 +58,11 @@ class ResultTab extends React.Component {
                 }
             );
 
-            const json = await response.json();
-            if (json.Result === "Dont need to create result file" && data) {
+            const blob = await response.blob();
+            const blob_text = await blob.text();
+            if (blob_text.length === 45 && data){
                 JSONToCSVConvertor(data, 'Creator_List_Download_' + moment().format("YYYYDDMM"), true);
             } else if (response.ok) {
-                const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
