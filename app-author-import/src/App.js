@@ -23,14 +23,29 @@ class AuthorImport extends React.Component {
       tasks: [],
       task_ids: [],
       records: [],
+      counts:{},
+      currentPage: 1,
+      maxPage: 0,
       importStatus: config.IMPORT_STATUS.NONE,
       isShowMessage: false,
+      isAgree: false,
+      isTarget: "author_db",
+      total: 0,
+      success: 0, 
+      failure: 0, 
+      pending: 0,
       setStep: this.setStep,
+      setTarget: this.setTarget,
       onChangeTab: this.onChangeTab,
       setErrorMessage: this.setErrorMessage,
       isImportAvailable: this.isImportAvailable,
       setImportData: this.setImportData,
-      setTaskData: this.setTaskData
+      setTaskData: this.setTaskData,
+      setIsAgree: this.setIsAgree,
+      setRecords: this.setRecords,
+      setTaskData: this.setTaskData,
+      setCurrentPage: this.setCurrentPage,
+      setResultSummary: this.setResultSummary,
     }
   }
 
@@ -40,6 +55,25 @@ class AuthorImport extends React.Component {
 
   setStep = (step) => {
     this.setState({ step });
+  };
+
+  setTarget = (isTarget) => {
+    this.setState({ isTarget });
+  };
+  
+  setRecords = (records) => {
+    records.forEach(record => {
+      record.fullname = prepareDisplayName(record.authorNameInfo);
+    });
+    this.setState({ records });
+  };
+
+  setCurrentPage = (currentPage) => {
+    this.setState({ currentPage });
+  };
+
+  setResultSummary = (total, success, failure, pending) => {
+    this.setState({ total, success, failure, pending });
   };
 
   onChangeTab = (tab) => {
@@ -57,10 +91,23 @@ class AuthorImport extends React.Component {
     this.setState({ errorMsg });
   };
 
+  setIsAgree =(isAgree) =>{
+    this.setState({isAgree})
+  }
+  
   setImportData = (records) => {
-    const canImport = records.filter(item => {
-      return !item.errors || item.errors.length === 0;
-    }).length > 0;
+    let counts = records.counts||{};
+    let maxPage = records.max_page;
+    let canImport
+    records = records.list_import_data;
+
+    if (Object.keys(counts).length === 0){
+      canImport = records.filter(item => {
+        return !item.errors || item.errors.length === 0;
+      }).length > 0;
+    }else{
+      canImport = !(counts.num_error === counts.num_total);
+    }
 
     records.forEach(record => {
       record.fullname = prepareDisplayName(record.authorNameInfo);
@@ -68,7 +115,9 @@ class AuthorImport extends React.Component {
 
     this.setState({
       tab: 'import',
-      records,
+      records: records,
+      counts: counts,
+      maxPage: maxPage,
       importStatus: canImport ? config.IMPORT_STATUS.PENDING : config.IMPORT_STATUS.NONE,
       step: config.STEPS.IMPORT_STEP,
       errorMsg: ''
@@ -82,6 +131,8 @@ class AuthorImport extends React.Component {
       tasks,
       tab: 'result',
       step: config.STEPS.RESULT_STEP,
+      currentPage: 1,
+      maxPage: Math.ceil(tasks.length/100),
       importStatus: config.IMPORT_STATUS.IMPORTING,
       task_ids: tasks.map(task => task.task_id)
     });
@@ -135,7 +186,7 @@ class AuthorImport extends React.Component {
   onCheckImportStatus = async () => {
     return await new Promise(resolve => {
       const intervalCheckStatus = setInterval(async () => {
-        const { tasks, task_ids } = this.state;
+        const { tasks, task_ids, isTarget, total } = this.state;
         let errorMsg = '';
         let isDone = true;
 
@@ -147,27 +198,62 @@ class AuthorImport extends React.Component {
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ tasks: task_ids })
+              body: JSON.stringify({
+                tasks: task_ids, 
+                isTarget: isTarget
+              })
             }
           );
           const data = await response.json();
           if (data) {
-            const _tasks = data.map(taskInfo => {
-              const current_tasks = tasks.filter(task => task.task_id === taskInfo.task_id);
-              const current_task = current_tasks && current_tasks.length > 0 ? current_tasks[0] : false;
-              if (current_task) {
-                current_task.status = taskInfo.status;
-                current_task.start_date = taskInfo.start_date;
-                current_task.end_date = taskInfo.end_date;
-                current_task.error_id = taskInfo.error_id;
+            let _tasks;
+            if (isTarget === 'author_db') {
+              const frontTask = data.tasks;
+              _tasks = frontTask.map(taskInfo => {
+                const current_tasks = tasks.filter(task => task.task_id === taskInfo.task_id);
+                const current_task = current_tasks && current_tasks.length > 0 ? current_tasks[0] : false;
+                if (current_task) {
+                  current_task.status = taskInfo.status;
+                  current_task.start_date = taskInfo.start_date;
+                  current_task.end_date = taskInfo.end_date;
+                  current_task.error_id = taskInfo.error_id;
 
-                if (taskInfo.status === 'PENDING') {
+                  if (taskInfo.status === 'PENDING') {
+                    isDone = false;
+                  }
+                }
+                return current_task;
+              });
+              if (data.over_max){
+                const overMaxStatus = data.over_max.status
+                if(overMaxStatus === 'PENDING'){
                   isDone = false;
                 }
+                else if (overMaxStatus === 'FAILURE'){
+                  errorMsg = bridge_params.import_fail_error;
+                }
               }
-              return current_task;
-            });
 
+              const resultSummary = data.summary;
+              const pending = total - (data.summary.success_count + data.summary.failure_count);
+              this.setResultSummary(total, resultSummary.success_count, resultSummary.failure_count, pending);
+            } else {
+              _tasks = data.map(taskInfo => {
+                const current_tasks = tasks.filter(task => task.task_id === taskInfo.task_id);
+                const current_task = current_tasks && current_tasks.length > 0 ? current_tasks[0] : false;
+                if (current_task) {
+                  current_task.status = taskInfo.status;
+                  current_task.start_date = taskInfo.start_date;
+                  current_task.end_date = taskInfo.end_date;
+                  current_task.error_id = taskInfo.error_id;
+
+                  if (taskInfo.status === 'PENDING') {
+                    isDone = false;
+                  }
+                }
+                return current_task;
+              });
+            }
             this.setState({
               tasks: _tasks,
               importStatus: isDone ? config.IMPORT_STATUS.DONE : config.IMPORT_STATUS.IMPORTING

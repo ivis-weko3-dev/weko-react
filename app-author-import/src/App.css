@@ -23,6 +23,23 @@
   }
 }
 
+.modal-dialog {
+  margin-top: 130px !important;
+}
+
+.modal-text {
+  padding-left: 20px;
+  padding-left: 20px;
+}
+
+.margin{
+  margin-left: 15%;
+}
+
+.width-10percent {
+  width: 10%;
+}
+
 .opacity1 {
   opacity: 1;
 }
@@ -66,6 +83,10 @@
 
 .text-align-right {
   text-align: right;
+}
+
+.alignCenter{
+  text-align: center
 }
 
 .flex-box {
